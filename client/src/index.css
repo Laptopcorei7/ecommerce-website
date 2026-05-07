@@ -1,0 +1,136 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: "DM Sans", system-ui, sans-serif;
+    background-color: #fdfcfa;
+    color: #1c1611;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: "Playfair Display", Georgia, serif;
+    letter-spacing: -0.01em;
+  }
+
+  ::selection {
+    background-color: #f5ddb0;
+    color: #1c1611;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 bg-ink-950 text-white font-medium rounded-full text-sm tracking-wide transition-all duration-200 hover:bg-ink-800 hover:shadow-medium active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 border border-ink-950 text-ink-950 font-medium rounded-full text-sm tracking-wide transition-all duration-200 hover:bg-ink-950 hover:text-white active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-ink-700 font-medium rounded-full text-sm transition-all duration-200 hover:bg-ink-100 active:scale-95;
+  }
+  .btn-brand {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 bg-brand-600 text-white font-medium rounded-full text-sm tracking-wide transition-all duration-200 hover:bg-brand-700 hover:shadow-medium active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 bg-white border border-ink-200 rounded-2xl text-sm text-ink-900 placeholder:text-ink-400 transition-all duration-200 focus:outline-none focus:border-ink-950 focus:ring-2 focus:ring-ink-950/10 disabled:bg-ink-50 disabled:cursor-not-allowed;
+  }
+
+  .card {
+    @apply bg-white rounded-3xl overflow-hidden shadow-card;
+  }
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1;
+  }
+
+  .section-title {
+    @apply font-serif text-3xl md:text-4xl font-semibold text-ink-950 leading-tight;
+  }
+  .section-subtitle {
+    @apply text-ink-500 text-base mt-2;
+  }
+
+  .tag {
+    @apply inline-block px-3 py-1 rounded-full text-xs font-medium tracking-widest uppercase bg-ink-100 text-ink-600;
+  }
+}
+
+@layer utilities {
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .animate-in {
+    animation: fadeUp 0.35s ease-out;
+  }
+  .slide-in-from-right-5 {
+    animation: slideInFromRight 0.25s ease-out;
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #ccbfad;
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #b4a08a;
+}
