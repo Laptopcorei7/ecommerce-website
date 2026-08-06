@@ -1,10 +1,10 @@
 # Sundry
 
-A full-stack storefront for a general store — homeware, clothing, tools and
-books, forty-three items in total. React on the front, Express and MongoDB
+A full-stack storefront for a general store selling homeware, clothing, tools
+and books. Forty-three items in total. React on the front, Express and MongoDB
 behind it, with a real cart, real orders, real reviews and an admin area.
 
-Built as a portfolio project. It is not deployed and takes no payments; what it
+Built as a portfolio project. It is not deployed and takes no payments. What it
 is meant to demonstrate is the shape of the thing done carefully.
 
 ![The Sundry home page](docs/screenshots/home-hero.jpg)
@@ -13,37 +13,37 @@ is meant to demonstrate is the shape of the thing done carefully.
 
 ## Screens
 
-|                                                                  |                                                          |
-| ---------------------------------------------------------------- | -------------------------------------------------------- |
-| ![The catalogue index](docs/screenshots/index-grid.jpg)          | ![A product page](docs/screenshots/product-detail.jpg)   |
-| The index — hairline catalogue grid, filters in the query string | Product page — gallery, derived rating, reviews          |
-| ![Order history](docs/screenshots/orders.jpg)                    | ![Admin dashboard](docs/screenshots/admin-dashboard.jpg) |
-| Order history with expandable line items                         | Admin — shop figures and order status transitions        |
+|                                                                            |                                                          |
+| -------------------------------------------------------------------------- | -------------------------------------------------------- |
+| ![The catalogue index](docs/screenshots/index-grid.jpg)                    | ![A product page](docs/screenshots/product-detail.jpg)   |
+| The index, a hairline catalogue grid with filters held in the query string | A product page, with gallery, derived rating and reviews |
+| ![Order history](docs/screenshots/orders.jpg)                              | ![Admin dashboard](docs/screenshots/admin-dashboard.jpg) |
+| Order history with expandable line items                                   | Admin view of shop figures and order status transitions  |
 
 ---
 
 ## The design
 
-The interface is deliberately not the default. Type does the branding: display
-copy is set in **Fraunces** with its optical-size, `SOFT` and `WONK` axes
-turned on, the UI runs on **Inter Tight**, and every piece of metadata —
-category, price, stock, SKU, dates — is **IBM Plex Mono**, uppercase and
-tracked. That last choice does most of the work of making the app read as
-retail rather than as a dashboard.
+The interface is deliberately not the default. Type does the branding. Display
+copy is set in **Fraunces** with its optical-size, `SOFT` and `WONK` axes turned
+on, the UI runs on **Inter Tight**, and every piece of metadata is **IBM Plex
+Mono**, uppercase and tracked: category, price, stock, SKU, dates. That last
+choice does most of the work of making the app read as retail rather than as a
+dashboard.
 
-The palette is printing ink on paper stock: a warm off-white ground
-(`#F7F6F2`), a cool near-black (`#14161A`), and exactly one accent — vermilion
-`#C8401B` — spent only on price, sale state and the primary action. Radii are
-2–4px and there are effectively no drop shadows; separation comes from hairline
+The palette is printing ink on paper stock. A warm off-white ground
+(`#F7F6F2`), a cool near-black (`#14161A`), and exactly one accent, vermilion
+`#C8401B`, spent only on price, sale state and the primary action. Radii are
+2–4px and there are effectively no drop shadows. Separation comes from hairline
 rules and a step in background tone, the way a printed catalogue divides one
 cell from the next.
 
-Restraint is not an excuse for grey-on-white. Every text colour meets **WCAG AA**
-against the ground it sits on: `ink-600` (6.22:1) is the floor for anything
-carrying meaning, and body copy is 15–16px with metadata at 12–14px. Only
-disabled controls sit lighter, which WCAG 1.4.3 exempts. It was checked by
-walking the rendered DOM and computing the contrast of every text node rather
-than by eye.
+Restraint is not an excuse for grey-on-white. Every text colour meets **WCAG
+AA** against the ground it sits on. `ink-600` (6.22:1) is the floor for
+anything carrying meaning, body copy is 15–16px, and metadata sits at 12–14px.
+Only disabled controls are lighter, which WCAG 1.4.3 exempts. This was checked
+by walking the rendered DOM and computing the contrast of every text node
+rather than by eye.
 
 Product photography was chosen, not scraped. Every image is a real Unsplash
 photograph picked for a neutral ground and soft light so the grid reads as one
@@ -57,30 +57,30 @@ node src/scripts/seed-products.js --verify
 
 ## Stack
 
-|         |                                                              |
-| ------- | ------------------------------------------------------------ |
-| Client  | React 18, TypeScript, Vite, Tailwind CSS, React Router       |
-| Server  | Node, Express 5, Mongoose 9, MongoDB                         |
-| Auth    | File-backed sessions + httpOnly cookie (not JWT — see below) |
-| Tooling | Prettier, ESLint                                             |
+|         |                                                                   |
+| ------- | ----------------------------------------------------------------- |
+| Client  | React 18, TypeScript, Vite, Tailwind CSS, React Router            |
+| Server  | Node, Express 5, Mongoose 9, MongoDB                              |
+| Auth    | File-backed sessions + httpOnly cookie, not JWT (explained below) |
+| Tooling | Prettier, ESLint                                                  |
 
 ---
 
 ## Features
 
-**Storefront** — catalogue with search, category filter, four sort orders and
+**Storefront.** Catalogue with search, category filter, four sort orders and
 pagination, all held in the query string so a filtered view survives a reload
 and the back button. Product pages with a three-crop gallery, stock states, and
 reviews. Saved items. A cart that persists against the account.
 
-**Checkout** — address capture, a running total computed from the same pricing
+**Checkout.** Address capture, a running total computed from the same pricing
 rule the server charges, and orders that decrement stock atomically.
 
-**Reviews** — one per customer per product, enforced by a unique compound
-index. Ratings shown on the storefront are always recomputed from the review
-documents that exist; nothing displays a rating with nothing behind it.
+**Reviews.** One per customer per product, enforced by a unique compound index.
+Ratings shown on the storefront are always recomputed from the review documents
+that exist, so nothing displays a rating with nothing behind it.
 
-**Admin** — a separate sign-in requiring an employee ID, a dashboard of shop
+**Admin.** A separate sign-in requiring an employee ID, a dashboard of shop
 figures, order status transitions, and full catalogue CRUD.
 
 ---
@@ -110,25 +110,25 @@ server/src
 `server/src/lib/pricing.js` is authoritative and `client/src/lib/pricing.ts`
 mirrors it, so the storefront can show a running total without a round trip
 while the server remains the thing that decides what is charged. Money is
-rounded to whole cents at every step — summing unrounded floats produces totals
-that don't match the lines shown to the customer.
+rounded to whole cents at every step, because summing unrounded floats produces
+totals that do not match the lines shown to the customer.
 
 **Stock changes are atomic and transactional.** Orders decrement stock with a
 single `bulkWrite` filtered on `stock: { $gte: quantity }`, so availability is
-re-checked at write time rather than trusting an earlier read; a short
+re-checked at write time rather than trusting an earlier read, and a short
 `modifiedCount` aborts the whole order with a 409. Cancellations restock via
 `$inc` inside a transaction, so two concurrent cancels conflict instead of
-double-restocking. (This needs a replica set — Atlas provides one.)
+double-restocking. (This needs a replica set, which Atlas provides.)
 
 **Auth is server-side sessions, not JWT.** Sessions live in a file keyed by an
 httpOnly cookie. Writes are coalesced and land via a temp-file rename so a
-crash cannot truncate the store; the boot-time read is synchronous on purpose,
+crash cannot truncate the store. The boot-time read is synchronous on purpose,
 because an async one would serve the first requests against an empty map and
 log everyone out. It is a deliberate choice: revocation is genuinely useful
 here, and a stateless token would trade a correct design for a familiar one.
 
 **Auth middleware is scoped per route.** A path-less `router.use(requireAuth)`
-on a router mounted at the root applies to every request that reaches it —
+on a router mounted at the root applies to every request that reaches it,
 including routes registered in later routers. Three routers did this, which is
 why public review listings were returning 401.
 
@@ -142,7 +142,7 @@ generated.
 ## Running it
 
 **Requires** Node 18+ and a MongoDB connection string. Transactions need a
-replica set, so a MongoDB Atlas cluster is the easiest route; a standalone
+replica set, so a MongoDB Atlas cluster is the easiest route. A standalone
 `mongod` will serve the catalogue but fail on checkout.
 
 ```bash
@@ -157,7 +157,7 @@ Create `server/.env`:
 MONGO_URI=mongodb+srv://user:pass@cluster.mongodb.net/sundry
 PORT=8000
 
-# Optional — used by create-admin.js, which falls back to dev defaults
+# Optional. Used by create-admin.js, which falls back to dev defaults.
 ADMIN_EMAIL=admin@sundry.test
 ADMIN_PASSWORD=your-password
 ADMIN_EMPLOYEE_ID=SUN-0001
@@ -182,7 +182,7 @@ cd client && npm run dev       # http://localhost:3000
 ### Signing in
 
 Seeding creates twelve demo customers with order and review history. Any of
-them works; the first is:
+them works. The first is:
 
 ```
 adwoa.mensah@example.com / Sundry!Demo7
