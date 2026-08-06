@@ -1,74 +1,179 @@
 /** @type {import('tailwindcss').Config} */
+
+/**
+ * Sundry — Editorial Mercantile
+ *
+ * The palette is printing ink on paper stock with a single vermilion accent.
+ * Radii are near-square and shadows are almost entirely removed: elevation is
+ * expressed with hairline rules and a step in background tone, the way a
+ * printed catalogue separates one cell from the next.
+ */
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
       colors: {
-        brand: {
-          50: "#fdf8f0",
-          100: "#faefd9",
-          200: "#f5ddb0",
-          300: "#edc47f",
-          400: "#e4a54d",
-          500: "#d4892a",
-          600: "#b8691f",
-          700: "#97501b",
-          800: "#7a3f1d",
-          900: "#65341c",
-          950: "#3b1a0b",
+        // Paper stock. The page ground and every raised surface on it.
+        paper: {
+          DEFAULT: "#F7F6F2",
+          50: "#FCFBF9",
+          100: "#F7F6F2",
+          200: "#EFEDE6",
+          300: "#E4E1D8",
         },
+
+        // Printing ink — cool and slightly green, never brown. The warmth in
+        // this design comes from the paper, not the type.
         ink: {
-          50: "#f9f7f4",
-          100: "#f0ece5",
-          200: "#e1d8cc",
-          300: "#ccbfad",
-          400: "#b4a08a",
-          500: "#9e886e",
-          600: "#8a7260",
-          700: "#735f52",
-          800: "#5f4e46",
-          900: "#4f4039",
-          950: "#1c1611",
+          50: "#F1F2F4",
+          100: "#E2E5E8",
+          200: "#C9CDD3",
+          300: "#AAB0B8",
+          400: "#8B929C",
+          500: "#6F7681",
+          600: "#565C67",
+          700: "#3D424B",
+          800: "#2C3037",
+          900: "#1E2126",
+          950: "#14161A",
+        },
+
+        // The one accent. Price, sale, primary action, and nothing else.
+        vermilion: {
+          100: "#F7DED5",
+          300: "#E89477",
+          500: "#DC5430",
+          600: "#C8401B",
+          700: "#9E2F12",
+        },
+
+        // Rules, dividers, and the tone behind an empty image well.
+        clay: {
+          DEFAULT: "#C9C2B4",
+          light: "#DED9CE",
+          dark: "#A79E8C",
         },
       },
+
       fontFamily: {
-        sans: ["DM Sans", "system-ui", "sans-serif"],
-        serif: ["Playfair Display", "Georgia", "serif"],
+        sans: ["Inter Tight", "system-ui", "sans-serif"],
+        serif: ["Fraunces", "Georgia", "serif"],
+        mono: ["IBM Plex Mono", "ui-monospace", "monospace"],
       },
+
+      fontSize: {
+        // Metadata sizes — always paired with font-mono and wide tracking.
+        //
+        // These were 10/11/12px, which is too small to read comfortably even
+        // with good eyesight; uppercase mono is harder to read than lowercase
+        // at any given size, and tracking makes it harder still. Raised to
+        // 12/13/14px, with tracking easing off as size grows. None of it
+        // stops reading as metadata for being legible.
+        "meta-xs": [
+          "0.75rem",
+          { lineHeight: "1.125rem", letterSpacing: "0.1em" },
+        ],
+        meta: [
+          "0.8125rem",
+          { lineHeight: "1.25rem", letterSpacing: "0.085em" },
+        ],
+        "meta-lg": [
+          "0.875rem",
+          { lineHeight: "1.375rem", letterSpacing: "0.07em" },
+        ],
+
+        // Display sizes. Tracking tightens as size grows, which is how
+        // optically-sized type is supposed to behave.
+        "display-sm": ["2rem", { lineHeight: "1.1", letterSpacing: "-0.02em" }],
+        display: ["2.75rem", { lineHeight: "1.05", letterSpacing: "-0.025em" }],
+        "display-lg": [
+          "4rem",
+          { lineHeight: "0.98", letterSpacing: "-0.03em" },
+        ],
+        "display-xl": [
+          "5.5rem",
+          { lineHeight: "0.94", letterSpacing: "-0.035em" },
+        ],
+      },
+
+      // Near-square. `full` is kept for things that are genuinely round —
+      // avatars, status dots, carousel indicators.
       borderRadius: {
-        "2xl": "1rem",
-        "3xl": "1.5rem",
-        "4xl": "2rem",
+        none: "0",
+        sm: "2px",
+        DEFAULT: "3px",
+        md: "3px",
+        lg: "4px",
+        xl: "4px",
+        "2xl": "6px",
+        "3xl": "8px",
+        "4xl": "8px",
+        full: "9999px",
       },
+
+      // Only overlays get a shadow. Everything on the page plane uses rules.
       boxShadow: {
-        soft: "0 2px 16px 0 rgba(28,22,17,0.08)",
-        medium: "0 4px 32px 0 rgba(28,22,17,0.12)",
-        strong: "0 8px 48px 0 rgba(28,22,17,0.18)",
-        card: "0 1px 4px 0 rgba(28,22,17,0.06), 0 4px 16px 0 rgba(28,22,17,0.06)",
-        "card-hover": "0 8px 32px 0 rgba(28,22,17,0.14)",
+        none: "none",
+        soft: "0 1px 2px 0 rgba(20,22,26,0.04)",
+        medium: "0 2px 8px 0 rgba(20,22,26,0.06)",
+        strong: "0 12px 32px -8px rgba(20,22,26,0.18)",
+        card: "none",
+        "card-hover": "none",
       },
+
+      borderColor: {
+        rule: "rgba(20,22,26,0.12)",
+        "rule-strong": "rgba(20,22,26,0.24)",
+      },
+
+      // Tailwind's default opacity scale steps in fives, but hairline rules
+      // need finer control than 10% → 15%. A slash modifier only resolves if
+      // its value exists here, so the in-between steps are declared.
+      opacity: {
+        4: "0.04",
+        6: "0.06",
+        8: "0.08",
+        12: "0.12",
+        16: "0.16",
+        24: "0.24",
+        88: "0.88",
+        92: "0.92",
+      },
+
+      maxWidth: {
+        prose: "62ch",
+        shell: "84rem",
+      },
+
+      transitionTimingFunction: {
+        // Decelerating curve — motion arrives rather than stops.
+        out: "cubic-bezier(0.22, 1, 0.36, 1)",
+        "in-out": "cubic-bezier(0.65, 0, 0.35, 1)",
+      },
+
       animation: {
-        "fade-up": "fadeUp 0.4s ease-out",
-        "fade-in": "fadeIn 0.3s ease-out",
-        "slide-right": "slideRight 0.3s ease-out",
-        "scale-in": "scaleIn 0.2s ease-out",
+        rise: "rise 0.45s cubic-bezier(0.22,1,0.36,1) both",
+        fade: "fade 0.3s cubic-bezier(0.22,1,0.36,1) both",
+        "sheet-in": "sheetIn 0.35s cubic-bezier(0.22,1,0.36,1) both",
+        marquee: "marquee 42s linear infinite",
       },
+
       keyframes: {
-        fadeUp: {
-          "0%": { opacity: "0", transform: "translateY(16px)" },
+        rise: {
+          "0%": { opacity: "0", transform: "translateY(10px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
-        fadeIn: {
+        fade: {
           "0%": { opacity: "0" },
           "100%": { opacity: "1" },
         },
-        slideRight: {
-          "0%": { opacity: "0", transform: "translateX(-12px)" },
+        sheetIn: {
+          "0%": { opacity: "0", transform: "translateX(16px)" },
           "100%": { opacity: "1", transform: "translateX(0)" },
         },
-        scaleIn: {
-          "0%": { opacity: "0", transform: "scale(0.95)" },
-          "100%": { opacity: "1", transform: "scale(1)" },
+        marquee: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
         },
       },
     },

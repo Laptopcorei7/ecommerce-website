@@ -1,181 +1,362 @@
+/**
+ * Seed the storefront: products, demo customers, and the reviews behind every
+ * product's rating.
+ *
+ *   node src/scripts/seed-products.js            seed
+ *   node src/scripts/seed-products.js --verify   check every image URL first
+ *
+ * Ratings are never written by hand. The seeder inserts real Review documents
+ * and then recomputes averageRating and totalReviews from them, so the numbers
+ * the storefront shows always have reviews behind them.
+ */
+
 const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
+
 const mongoose = require("mongoose");
 const Product = require("../models/product/product.mongo");
+const Review = require("../models/reviews/review.mongo");
 const Register = require("../models/user/register.mongo");
+const { PRODUCTS, imageUrl } = require("../data/catalog");
+const { CUSTOMERS, CUSTOMER_PASSWORD, BODIES } = require("../data/reviews");
 
-// ─────────────────────────────────────────────────────────────
-// DummyJSON category → your schema enum
-// Every DummyJSON category maps to one of:
-// Electronics | Clothing | Books | Home | Sports | Other
-// ─────────────────────────────────────────────────────────────
-const CATEGORY_MAP = {
-  smartphones: "Electronics",
-  laptops: "Electronics",
-  tablets: "Electronics",
-  "mobile-accessories": "Electronics",
-  "mens-shirts": "Clothing",
-  "mens-shoes": "Clothing",
-  "mens-watches": "Clothing",
-  tops: "Clothing",
-  "womens-dresses": "Clothing",
-  "womens-shoes": "Clothing",
-  "womens-bags": "Clothing",
-  "womens-jewellery": "Clothing",
-  "womens-watches": "Clothing",
-  sunglasses: "Clothing",
-  "skin-care": "Other",
-  beauty: "Other",
-  fragrances: "Other",
-  groceries: "Other",
-  motorcycle: "Other",
-  vehicle: "Other",
-  furniture: "Home",
-  "home-decoration": "Home",
-  "kitchen-accessories": "Home",
-  "sports-accessories": "Sports",
-};
+const VERIFY = process.argv.includes("--verify");
 
-// ─────────────────────────────────────────────────────────────
-// Fetch ALL products from DummyJSON in one request
-// limit=0 removes the default cap and returns everything (~194)
-// ─────────────────────────────────────────────────────────────
-async function fetchAllDummyProducts() {
-  console.log("🌐 Fetching products from DummyJSON...");
-  try {
-    const res = await fetch(
-      "https://dummyjson.com/products?limit=0&select=title,description,price,category,brand,stock,rating,reviews,thumbnail,images",
-    );
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    console.log(`✓ Fetched ${data.products.length} products from DummyJSON\n`);
-    return data.products;
-  } catch (err) {
-    console.error("❌ Failed to fetch from DummyJSON:", err.message);
-    process.exit(1); // No point continuing without real data
-  }
-}
+// Reviews per product. The unique (productId, userId) index caps this at the
+// number of demo customers.
+const DAY = 86_400_000;
+const MIN_REVIEWS = 3;
+const MAX_REVIEWS = Math.min(8, CUSTOMERS.length);
 
-// ─────────────────────────────────────────────────────────────
-// Transform a single DummyJSON product into your schema shape
-// ─────────────────────────────────────────────────────────────
-function transformProduct(dummyProduct, adminUserId) {
-  const {
-    title,
-    description,
-    price,
-    category,
-    brand,
-    stock,
-    rating,
-    reviews,
-    thumbnail,
-    images,
-  } = dummyProduct;
-
-  // Map category — fall back to "Other" for anything unmapped
-  const mappedCategory = CATEGORY_MAP[category] || "Other";
-
-  // Images: thumbnail first, then up to 2 extras from images[]
-  // Filter out the thumbnail from extras to avoid duplicates
-  const extras = (images || []).filter((url) => url !== thumbnail).slice(0, 2);
-  const productImages = [thumbnail, ...extras].filter(Boolean);
-
-  // Rating: DummyJSON gives a float like 4.69 — round to 1 decimal
-  const averageRating = Math.round((rating || 0) * 10) / 10;
-
-  // Review count: use the actual reviews array length
-  const totalReviews = Array.isArray(reviews) ? reviews.length : 0;
-
-  return {
-    name: title,
-    description: description || "",
-    price: parseFloat(price.toFixed(2)),
-    category: mappedCategory,
-    brand: brand || "",
-    stock: stock || 0,
-    images: productImages,
-    averageRating,
-    totalReviews,
-    createdBy: adminUserId,
+// ─────────────────────────────────────────────────────────────────────────────
+// Deterministic RNG
+//
+// A fixed seed means re-running produces the same catalogue. Without it, every
+// seed shuffles ratings and screenshots stop matching the database.
+// ─────────────────────────────────────────────────────────────────────────────
+function makeRng(seed) {
+  let s = seed >>> 0;
+  return function next() {
+    s = (s * 1664525 + 1013904223) >>> 0;
+    return s / 0x100000000;
   };
 }
+const rng = makeRng(20260806);
 
-// ─────────────────────────────────────────────────────────────
-// Main
-// ─────────────────────────────────────────────────────────────
-async function seedProducts() {
-  try {
-    console.log("🌱 Starting product seeding...\n");
+const pick = (arr) => arr[Math.floor(rng() * arr.length)];
 
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log("✓ Connected to database\n");
-
-    // Require an admin user — createdBy is non-nullable in the schema
-    const adminUser = await Register.findOne({ role: "admin" });
-    if (!adminUser) {
-      console.error(
-        "❌ No admin user found. Create one first with create-admin.js",
-      );
-      process.exit(1);
-    }
-    console.log("✓ Found admin user:", adminUser.email, "\n");
-
-    // Fetch from DummyJSON — exits if unreachable
-    const dummyProducts = await fetchAllDummyProducts();
-
-    // Clear existing products
-    const existingCount = await Product.countDocuments();
-    if (existingCount > 0) {
-      console.log(`⚠ Found ${existingCount} existing products — clearing...`);
-      await Product.deleteMany({});
-      console.log("✓ Cleared\n");
-    }
-
-    // Transform and insert
-    console.log("🔄 Transforming products...");
-    const products = dummyProducts.map((p) =>
-      transformProduct(p, adminUser._id),
-    );
-    console.log(`✓ Transformed ${products.length} products\n`);
-
-    console.log("💾 Inserting into database...");
-    const inserted = await Product.insertMany(products);
-    console.log(`✓ Inserted ${inserted.length} products\n`);
-
-    // ── Summary ──
-    console.log("📊 Category breakdown:");
-    const counts = {};
-    for (const p of inserted) {
-      counts[p.category] = (counts[p.category] || 0) + 1;
-    }
-    for (const [cat, count] of Object.entries(counts)) {
-      console.log(`   ${cat}: ${count} products`);
-    }
-
-    const withRatings = inserted.filter((p) => p.averageRating > 0).length;
-    console.log(
-      `\n⭐ Products with ratings: ${withRatings}/${inserted.length}`,
-    );
-
-    const top3 = [...inserted]
-      .sort((a, b) => b.averageRating - a.averageRating)
-      .slice(0, 3);
-    console.log("\n🏆 Top 3 by rating:");
-    for (const p of top3) {
-      console.log(
-        `   ${p.name} — ${p.averageRating}⭐ (${p.totalReviews} reviews) [${p.category}]`,
-      );
-    }
-
-    console.log("\n✅ Seeding complete!\n");
-  } catch (err) {
-    console.error("❌ Seeding error:", err);
-  } finally {
-    await mongoose.connection.close();
-    console.log("✓ Database connection closed");
-    process.exit(0);
+function pickDistinct(arr, count) {
+  const copy = [...arr];
+  const out = [];
+  while (out.length < count && copy.length) {
+    out.push(...copy.splice(Math.floor(rng() * copy.length), 1));
   }
+  return out;
 }
 
-seedProducts();
+// ─────────────────────────────────────────────────────────────────────────────
+// Images
+//
+// Three aspect ratios of the same photograph give the product gallery genuinely
+// different framings — a tall crop, a square and a wide one — without needing
+// three separate shoots.
+// ─────────────────────────────────────────────────────────────────────────────
+const ASPECTS = ["4:5", "1:1", "3:2"];
+
+function galleryFor(photo) {
+  return ASPECTS.map((ar) => `${imageUrl(photo, 1200)}&ar=${ar}`);
+}
+
+async function verifyImages() {
+  console.log(`Verifying ${PRODUCTS.length} product images…`);
+  const failures = [];
+
+  for (let i = 0; i < PRODUCTS.length; i += 8) {
+    const batch = PRODUCTS.slice(i, i + 8);
+    await Promise.all(
+      batch.map(async (p) => {
+        try {
+          const res = await fetch(imageUrl(p.photo, 200));
+          const type = res.headers.get("content-type") || "";
+          if (!res.ok || !type.startsWith("image/")) {
+            failures.push(
+              `${p.name} — HTTP ${res.status} (${type || "no type"})`,
+            );
+          }
+        } catch (err) {
+          failures.push(`${p.name} — ${err.message}`);
+        }
+      }),
+    );
+    process.stdout.write(".");
+  }
+
+  console.log("");
+  if (failures.length) {
+    console.error(`\n${failures.length} image(s) failed:`);
+    for (const f of failures) console.error(`  ${f}`);
+    throw new Error(
+      "Image verification failed — fix catalog.js before seeding",
+    );
+  }
+  console.log("All product images resolved.\n");
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Reviews
+//
+// Ratings are drawn to land near the catalogue's target without ever being
+// exactly it — a product where every reviewer agrees to one decimal place looks
+// fabricated.
+// ─────────────────────────────────────────────────────────────────────────────
+function ratingsFor(target, count) {
+  const out = [];
+  for (let i = 0; i < count; i += 1) {
+    const jitter = rng() < 0.72 ? 0 : rng() < 0.6 ? -1 : 1;
+    out.push(Math.max(3, Math.min(5, Math.round(target) + jitter)));
+  }
+  return out;
+}
+
+function bodyFor(category, rating) {
+  const band = rating >= 5 ? "high" : rating >= 4 ? "good" : "mixed";
+  const pool = BODIES[category] || BODIES.Other;
+  return pick(pool[band]);
+}
+
+/**
+ * How many reviews a product gets. Scaled from the catalogue's popularity
+ * target and then jittered, because a catalogue where every product has
+ * exactly the maximum number of reviews reads as generated.
+ */
+function reviewCountFor(product) {
+  const popularity = Math.min(1, (product.reviews ?? 20) / 120);
+  const base = MIN_REVIEWS + popularity * (MAX_REVIEWS - MIN_REVIEWS - 1);
+  const jitter = rng() < 0.4 ? 0 : rng() < 0.7 ? 1 : 2;
+  return Math.max(
+    MIN_REVIEWS,
+    Math.min(MAX_REVIEWS, Math.round(base + jitter)),
+  );
+}
+
+/**
+ * Rank products by how recently they were "added", rotating through the
+ * categories so the arrivals rail shows a mug beside a book beside a boot.
+ * Returns an array where `result[i]` is the recency rank of `products[i]` —
+ * 0 is newest.
+ */
+function recencyOrder(products) {
+  const byCategory = new Map();
+  products.forEach((product, i) => {
+    const bucket = byCategory.get(product.category) ?? [];
+    bucket.push(i);
+    byCategory.set(product.category, bucket);
+  });
+
+  // Shuffle within each category so the rotation isn't catalogue order.
+  const queues = [...byCategory.values()].map((bucket) =>
+    pickDistinct(bucket, bucket.length),
+  );
+
+  const ranks = new Array(products.length);
+  let rank = 0;
+  while (queues.some((q) => q.length)) {
+    for (const queue of queues) {
+      const next = queue.shift();
+      if (next !== undefined) ranks[next] = rank++;
+    }
+  }
+  return ranks;
+}
+
+function buildReviews(product, productId, customers, stockedAt) {
+  const reviewers = pickDistinct(customers, reviewCountFor(product));
+  const ratings = ratingsFor(product.rating, reviewers.length);
+
+  // Reviews land between the day the product was stocked and now. Without
+  // this every review carries the seed timestamp and the storefront reports
+  // that all of them were written "just now".
+  const window = Math.max(DAY, Date.now() - stockedAt.getTime());
+
+  return reviewers.map((user, i) => {
+    const rating = ratings[i];
+    const [title, comment] = bodyFor(product.category, rating);
+    const createdAt = new Date(stockedAt.getTime() + rng() * window);
+    return {
+      productId,
+      userId: user._id,
+      rating,
+      title,
+      comment,
+      // Most reviewers bought the thing; a minority did not.
+      isVerifiedPurchase: rng() < 0.8,
+      createdAt,
+      updatedAt: createdAt,
+    };
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Seed
+// ─────────────────────────────────────────────────────────────────────────────
+async function seedCustomers() {
+  const existing = await Register.find({
+    email: { $in: CUSTOMERS.map((c) => c.email) },
+  });
+  const byEmail = new Map(existing.map((u) => [u.email, u]));
+  const created = [];
+
+  for (const customer of CUSTOMERS) {
+    if (byEmail.has(customer.email)) continue;
+    // Register.create() runs the pre-save hook that hashes the password.
+    // insertMany() would skip it and store plaintext.
+    created.push(
+      await Register.create({
+        ...customer,
+        password: CUSTOMER_PASSWORD,
+        role: "user",
+        isVerified: true,
+      }),
+    );
+  }
+
+  const all = [...existing, ...created];
+  console.log(
+    `Customers: ${all.length} total (${created.length} created, ${existing.length} already present)`,
+  );
+  return all;
+}
+
+async function seed() {
+  if (!process.env.MONGO_URI) {
+    throw new Error("MONGO_URI is not set — check server/.env");
+  }
+
+  if (VERIFY) await verifyImages();
+
+  await mongoose.connect(process.env.MONGO_URI);
+  console.log("Connected to MongoDB\n");
+
+  const admin = await Register.findOne({ role: "admin" });
+  if (!admin) {
+    throw new Error(
+      "No admin user found. Run `node src/scripts/create-admin.js` first — " +
+        "products require a createdBy reference.",
+    );
+  }
+  console.log(`Admin: ${admin.email}`);
+
+  const customers = await seedCustomers();
+
+  // Products and their reviews are replaced together. Leaving old reviews
+  // behind would orphan them against product ids that no longer exist.
+  const [oldProducts, oldReviews] = await Promise.all([
+    Product.countDocuments(),
+    Review.countDocuments(),
+  ]);
+  if (oldProducts || oldReviews) {
+    await Promise.all([Product.deleteMany({}), Review.deleteMany({})]);
+    console.log(`Cleared ${oldProducts} products and ${oldReviews} reviews\n`);
+  }
+
+  // insertMany would stamp every document with the same createdAt, making
+  // "Newest" an arbitrary ordering and filling the arrivals rail with whichever
+  // category happened to sort first. Dates are assigned by rotating through the
+  // categories so the most recent additions span the shop.
+  //
+  // These have to be set at insert time: mongoose marks createdAt immutable
+  // when timestamps are enabled, so a later $set on it is silently dropped.
+  // `{ timestamps: false }` tells mongoose to keep the values given here.
+  const ranks = recencyOrder(PRODUCTS);
+
+  const inserted = await Product.insertMany(
+    PRODUCTS.map((p, i) => {
+      const daysAgo = 4 + ranks[i] * 16 + Math.floor(rng() * 12);
+      const createdAt = new Date(Date.now() - daysAgo * DAY);
+      return {
+        name: p.name,
+        description: p.description,
+        price: p.price,
+        category: p.category,
+        brand: p.brand,
+        stock: p.stock,
+        images: galleryFor(p.photo),
+        createdBy: admin._id,
+        createdAt,
+        updatedAt: createdAt,
+        // Placeholders. Overwritten below from the reviews actually inserted.
+        averageRating: 0,
+        totalReviews: 0,
+      };
+    }),
+    { timestamps: false },
+  );
+  console.log(`Inserted ${inserted.length} products`);
+
+  // Build every review, insert once, then fold the real averages back onto the
+  // products in a single bulkWrite rather than a save() per product.
+  const allReviews = [];
+  const productUpdates = [];
+
+  inserted.forEach((doc, i) => {
+    const reviews = buildReviews(
+      PRODUCTS[i],
+      doc._id,
+      customers,
+      doc.createdAt,
+    );
+    allReviews.push(...reviews);
+
+    const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
+    productUpdates.push({
+      updateOne: {
+        filter: { _id: doc._id },
+        update: {
+          $set: {
+            averageRating: Math.round((sum / reviews.length) * 10) / 10,
+            totalReviews: reviews.length,
+          },
+        },
+        timestamps: false,
+      },
+    });
+  });
+
+  await Review.insertMany(allReviews, { timestamps: false });
+  await Product.bulkWrite(productUpdates);
+  console.log(`Inserted ${allReviews.length} reviews and recomputed ratings\n`);
+
+  // ── Summary ──
+  const byCategory = inserted.reduce((acc, p) => {
+    acc[p.category] = (acc[p.category] || 0) + 1;
+    return acc;
+  }, {});
+
+  console.log("Catalogue");
+  for (const [category, count] of Object.entries(byCategory).sort()) {
+    console.log(`  ${category.padEnd(12)} ${String(count).padStart(3)}`);
+  }
+
+  const prices = inserted.map((p) => p.price);
+  console.log(
+    `\nPrice range   $${Math.min(...prices)} – $${Math.max(...prices)}`,
+  );
+  console.log(`Out of stock  ${inserted.filter((p) => p.stock === 0).length}`);
+  console.log(
+    `Low stock     ${inserted.filter((p) => p.stock > 0 && p.stock <= 5).length}`,
+  );
+  console.log(`Demo login    ${CUSTOMERS[0].email} / ${CUSTOMER_PASSWORD}\n`);
+}
+
+seed()
+  .then(() => {
+    console.log("Done.");
+    process.exitCode = 0;
+  })
+  .catch((err) => {
+    console.error(`\nSeeding failed: ${err.message}`);
+    process.exitCode = 1;
+  })
+  .finally(async () => {
+    await mongoose.connection.close();
+  });

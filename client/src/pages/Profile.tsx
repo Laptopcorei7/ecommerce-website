@@ -1,22 +1,27 @@
 import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
 import { profileApi } from "@/api";
+import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/contexts/ToastContext";
 import Input from "@/components/common/Input";
 import Button from "@/components/common/Button";
+import { formatDate } from "@/lib/format";
 
-type Tab = "profile" | "password";
+type Tab = "profile" | "security";
+
+const TABS: { id: Tab; label: string }[] = [
+  { id: "profile", label: "Details" },
+  { id: "security", label: "Password" },
+];
 
 export default function Profile() {
   const { user, setUser } = useAuth();
   const { success, error } = useToast();
+
   const [tab, setTab] = useState<Tab>("profile");
 
-  // Profile form
   const [name, setName] = useState(user?.name ?? "");
   const [savingProfile, setSavingProfile] = useState(false);
 
-  // Password form
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -25,202 +30,195 @@ export default function Profile() {
   );
   const [savingPassword, setSavingPassword] = useState(false);
 
-  const handleSaveProfile = async (e: React.FormEvent) => {
+  const nameChanged = name.trim() !== (user?.name ?? "") && name.trim() !== "";
+
+  async function handleSaveProfile(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim()) {
-      error("Name is required");
-      return;
-    }
+    if (!nameChanged) return;
+
     setSavingProfile(true);
     try {
-      const updated = await profileApi.update({ name });
-      setUser((u) => (u ? { ...u, ...updated.user } : u));
-      success("Profile updated successfully!");
+      const res = await profileApi.update({ name: name.trim() });
+      setUser(res.user);
+      success("Your details have been updated.");
     } catch (err) {
-      error((err as Error).message || "Failed to update profile");
+      error((err as Error).message || "Could not save your details.");
     } finally {
       setSavingProfile(false);
     }
-  };
+  }
 
-  const handleChangePassword = async (e: React.FormEvent) => {
+  async function handleChangePassword(e: React.FormEvent) {
     e.preventDefault();
+
     const errs: Record<string, string> = {};
-    if (!currentPassword) errs.currentPassword = "Current password is required";
-    if (!newPassword) errs.newPassword = "New password is required";
-    else if (newPassword.length < 8)
-      errs.newPassword = "Password must be at least 8 characters";
+    if (!currentPassword) errs.currentPassword = "Enter your current password.";
+    if (newPassword.length < 8) errs.newPassword = "Use at least 8 characters.";
     if (newPassword !== confirmPassword)
-      errs.confirmPassword = "Passwords do not match";
-    if (Object.keys(errs).length > 0) {
-      setPasswordErrors(errs);
-      return;
-    }
-    setPasswordErrors({});
+      errs.confirmPassword = "These don't match.";
+    if (newPassword && newPassword === currentPassword)
+      errs.newPassword = "That's the password you already have.";
+
+    setPasswordErrors(errs);
+    if (Object.keys(errs).length > 0) return;
+
     setSavingPassword(true);
     try {
       await profileApi.changePassword({ currentPassword, newPassword });
-      success("Password changed successfully!");
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
+      success("Password changed. Other sessions have been signed out.");
     } catch (err) {
-      error((err as Error).message || "Failed to change password");
+      error((err as Error).message || "Could not change your password.");
     } finally {
       setSavingPassword(false);
     }
-  };
+  }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">
-        Account Settings
-      </h1>
+    <div className="shell py-12">
+      <header className="border-b border-ink-950/12 pb-6">
+        <p className="meta">Account</p>
+        <h1 className="display-sm mt-3 text-ink-950">{user?.name}</h1>
+      </header>
 
-      {/* Avatar */}
-      <div className="flex items-center gap-4 bg-white rounded-2xl border border-gray-100 p-5 mb-6">
-        <div className="w-16 h-16 rounded-full bg-primary-600 text-white flex items-center justify-center text-2xl font-bold shrink-0">
-          {user?.name?.charAt(0).toUpperCase()}
-        </div>
-        <div>
-          <p className="font-semibold text-gray-900 text-lg">{user?.name}</p>
-          <p className="text-gray-500 text-sm">{user?.email}</p>
-          {user?.role === "admin" && (
-            <span className="inline-block mt-1 px-2.5 py-0.5 bg-purple-100 text-purple-700 text-xs font-bold rounded-full">
-              Admin
-            </span>
-          )}
-        </div>
-      </div>
+      <div className="grid gap-12 py-10 lg:grid-cols-12 lg:gap-14">
+        {/* ── Sidebar ─────────────────────────────────────────────────────── */}
+        <aside className="lg:col-span-3">
+          <nav className="flex gap-6 lg:flex-col lg:gap-0">
+            {TABS.map(({ id, label }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setTab(id)}
+                aria-current={tab === id ? "page" : undefined}
+                className={`relative py-2 text-left font-mono text-meta uppercase transition-colors lg:border-b lg:border-ink-950/12 lg:py-3 ${
+                  tab === id
+                    ? "text-ink-950"
+                    : "text-ink-600 hover:text-ink-950"
+                }`}
+              >
+                {label}
+                <span
+                  aria-hidden
+                  className={`absolute bottom-0 left-0 h-px w-full bg-vermilion-600 transition-transform duration-300 ease-out ${
+                    tab === id ? "scale-x-100" : "scale-x-0"
+                  }`}
+                />
+              </button>
+            ))}
+          </nav>
 
-      {/* Tabs */}
-      <div className="flex border-b border-gray-200 gap-6 mb-6">
-        {(
-          [
-            ["profile", "Profile"],
-            ["password", "Password"],
-          ] as [Tab, string][]
-        ).map(([t, label]) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`pb-3 text-sm font-semibold border-b-2 -mb-px transition-colors ${
-              tab === t
-                ? "border-primary-600 text-primary-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {tab === "profile" && (
-        <form
-          onSubmit={handleSaveProfile}
-          className="bg-white rounded-2xl border border-gray-100 p-6 space-y-4"
-        >
-          <Input
-            label="Full Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            placeholder="John Doe"
-          />
-          <Input
-            label="Email Address"
-            value={user?.email ?? ""}
-            disabled
-            hint="Email address cannot be changed"
-          />
-          <div className="pt-2">
-            <Button type="submit" isLoading={savingProfile}>
-              Save Changes
-            </Button>
-          </div>
-        </form>
-      )}
-
-      {tab === "password" && (
-        <form
-          onSubmit={handleChangePassword}
-          className="bg-white rounded-2xl border border-gray-100 p-6 space-y-4"
-        >
-          <Input
-            label="Current Password"
-            type="password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            error={passwordErrors.currentPassword}
-            required
-            placeholder="Your current password"
-          />
-          <Input
-            label="New Password"
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            error={passwordErrors.newPassword}
-            required
-            placeholder="At least 8 characters"
-            hint={
-              !passwordErrors.newPassword ? "Minimum 8 characters" : undefined
-            }
-          />
-          <Input
-            label="Confirm New Password"
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            error={passwordErrors.confirmPassword}
-            required
-            placeholder="Re-enter new password"
-          />
-
-          {/* Password strength */}
-          {newPassword && (
-            <div className="space-y-1.5">
-              <p className="text-xs text-gray-500">Password strength</p>
-              <div className="flex gap-1">
-                {[
-                  newPassword.length >= 8,
-                  /[A-Z]/.test(newPassword),
-                  /[a-z]/.test(newPassword),
-                  /[0-9]/.test(newPassword),
-                ].map((passed, i) => (
-                  <div
-                    key={i}
-                    className={`h-1.5 flex-1 rounded-full transition-colors ${
-                      passed ? "bg-green-500" : "bg-gray-200"
-                    }`}
-                  />
-                ))}
-              </div>
-              <div className="flex flex-wrap gap-x-3 gap-y-1">
-                {[
-                  { label: "8+ characters", ok: newPassword.length >= 8 },
-                  { label: "Uppercase", ok: /[A-Z]/.test(newPassword) },
-                  { label: "Lowercase", ok: /[a-z]/.test(newPassword) },
-                  { label: "Number", ok: /[0-9]/.test(newPassword) },
-                ].map(({ label, ok }) => (
-                  <span
-                    key={label}
-                    className={`text-[10px] flex items-center gap-1 ${ok ? "text-green-600" : "text-gray-400"}`}
-                  >
-                    {ok ? "✓" : "○"} {label}
-                  </span>
-                ))}
-              </div>
+          <dl className="mt-10 space-y-4">
+            <div>
+              <dt className="meta">Email</dt>
+              <dd className="mt-1 truncate text-[15px] text-ink-800">
+                {user?.email}
+              </dd>
             </div>
-          )}
+            <div>
+              <dt className="meta">Member since</dt>
+              <dd className="mt-1 font-mono text-[15px] tabular text-ink-800">
+                {formatDate(user?.createdAt)}
+              </dd>
+            </div>
+            {user?.role === "admin" && (
+              <div>
+                <dt className="meta">Role</dt>
+                <dd className="mt-1 font-mono text-[15px] uppercase text-vermilion-600">
+                  Administrator
+                </dd>
+              </div>
+            )}
+          </dl>
+        </aside>
 
-          <div className="pt-2">
-            <Button type="submit" isLoading={savingPassword}>
-              Change Password
-            </Button>
-          </div>
-        </form>
-      )}
+        {/* ── Panel ───────────────────────────────────────────────────────── */}
+        <div className="lg:col-span-6 lg:col-start-5">
+          {tab === "profile" ? (
+            <form onSubmit={handleSaveProfile} className="max-w-md">
+              <p className="meta-strong">Your details</p>
+              <p className="mt-3 text-[15px] leading-relaxed text-ink-600">
+                Your name appears on orders and on any reviews you write.
+              </p>
+
+              <div className="mt-6 space-y-4">
+                <Input
+                  label="Name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  autoComplete="name"
+                  required
+                />
+
+                <Input
+                  label="Email"
+                  value={user?.email ?? ""}
+                  disabled
+                  hint="Email changes aren't available in this build — there's no mail transport wired up to verify a new address."
+                />
+              </div>
+
+              <Button
+                type="submit"
+                isLoading={savingProfile}
+                disabled={!nameChanged}
+                className="mt-6"
+              >
+                Save changes
+              </Button>
+            </form>
+          ) : (
+            <form onSubmit={handleChangePassword} className="max-w-md">
+              <p className="meta-strong">Change password</p>
+              <p className="mt-3 text-[15px] leading-relaxed text-ink-600">
+                Changing your password signs out every other session, on every
+                device.
+              </p>
+
+              <div className="mt-6 space-y-4">
+                <Input
+                  label="Current password"
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  autoComplete="current-password"
+                  required
+                  error={passwordErrors.currentPassword}
+                />
+                <Input
+                  label="New password"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  autoComplete="new-password"
+                  required
+                  error={passwordErrors.newPassword}
+                  hint={
+                    passwordErrors.newPassword
+                      ? undefined
+                      : "At least 8 characters."
+                  }
+                />
+                <Input
+                  label="Confirm new password"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  autoComplete="new-password"
+                  required
+                  error={passwordErrors.confirmPassword}
+                />
+              </div>
+
+              <Button type="submit" isLoading={savingPassword} className="mt-6">
+                Change password
+              </Button>
+            </form>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
