@@ -4,6 +4,32 @@ interface PaginationProps {
   onPageChange: (page: number) => void;
 }
 
+/**
+ * Build the page list with ellipses: always the first and last page, plus a
+ * window around the current one. Returns numbers and `"…"` gaps.
+ */
+function pageList(page: number, totalPages: number): (number | "…")[] {
+  const WINDOW = 1;
+  const pages = new Set<number>([1, totalPages]);
+
+  for (let p = page - WINDOW; p <= page + WINDOW; p += 1) {
+    if (p > 1 && p < totalPages) pages.add(p);
+  }
+
+  const sorted = [...pages]
+    .filter((p) => p >= 1 && p <= totalPages)
+    .sort((a, b) => a - b);
+
+  const out: (number | "…")[] = [];
+  let previous = 0;
+  for (const p of sorted) {
+    if (previous && p - previous > 1) out.push("…");
+    out.push(p);
+    previous = p;
+  }
+  return out;
+}
+
 export default function Pagination({
   page,
   totalPages,
@@ -11,94 +37,62 @@ export default function Pagination({
 }: PaginationProps) {
   if (totalPages <= 1) return null;
 
-  const pages: (number | "...")[] = [];
-  if (totalPages <= 7) {
-    for (let i = 1; i <= totalPages; i++) pages.push(i);
-  } else {
-    pages.push(1);
-    if (page > 3) pages.push("...");
-    for (
-      let i = Math.max(2, page - 1);
-      i <= Math.min(totalPages - 1, page + 1);
-      i++
-    )
-      pages.push(i);
-    if (page < totalPages - 2) pages.push("...");
-    pages.push(totalPages);
-  }
-
-  const btn = (
-    label: React.ReactNode,
-    target: number,
-    isActive = false,
-    disabled = false,
-  ) => (
-    <button
-      key={`btn-${target}`}
-      onClick={() => !disabled && onPageChange(target)}
-      disabled={disabled}
-      className={`
-        min-w-[36px] h-9 px-2 rounded-lg text-sm font-medium transition-colors
-        ${
-          isActive
-            ? "bg-primary-600 text-white shadow-sm"
-            : disabled
-              ? "text-gray-300 cursor-not-allowed"
-              : "text-gray-600 hover:bg-gray-100"
-        }
-      `}
-    >
-      {label}
-    </button>
-  );
+  const items = pageList(page, totalPages);
+  const atStart = page <= 1;
+  const atEnd = page >= totalPages;
 
   return (
-    <div className="flex items-center gap-1">
-      {btn(
-        <svg
-          className="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 19l-7-7 7-7"
-          />
-        </svg>,
-        page - 1,
-        false,
-        page === 1,
-      )}
-      {pages.map((p, i) =>
-        p === "..." ? (
-          <span key={`ellipsis-${i}`} className="px-1 text-gray-400">
-            …
-          </span>
-        ) : (
-          btn(p, p as number, p === page)
-        ),
-      )}
-      {btn(
-        <svg
-          className="w-4 h-4"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 5l7 7-7 7"
-          />
-        </svg>,
-        page + 1,
-        false,
-        page === totalPages,
-      )}
-    </div>
+    <nav
+      aria-label="Pagination"
+      className="flex items-center justify-between gap-6 border-t border-ink-950/12 pt-6"
+    >
+      <button
+        type="button"
+        onClick={() => onPageChange(page - 1)}
+        disabled={atStart}
+        className="font-mono text-meta uppercase text-ink-600 transition-colors hover:text-ink-950 disabled:pointer-events-none disabled:text-ink-300"
+      >
+        ← Previous
+      </button>
+
+      <ol className="flex items-center gap-1">
+        {items.map((item, i) =>
+          item === "…" ? (
+            <li
+              key={`gap-${i}`}
+              aria-hidden
+              className="px-1 font-mono text-meta text-ink-300"
+            >
+              …
+            </li>
+          ) : (
+            <li key={item}>
+              <button
+                type="button"
+                onClick={() => onPageChange(item)}
+                aria-current={item === page ? "page" : undefined}
+                aria-label={`Page ${item}`}
+                className={`grid h-8 min-w-8 place-items-center px-2 font-mono text-meta tabular transition-colors ${
+                  item === page
+                    ? "bg-ink-950 text-paper-50"
+                    : "text-ink-600 hover:bg-ink-950/5 hover:text-ink-950"
+                }`}
+              >
+                {String(item).padStart(2, "0")}
+              </button>
+            </li>
+          ),
+        )}
+      </ol>
+
+      <button
+        type="button"
+        onClick={() => onPageChange(page + 1)}
+        disabled={atEnd}
+        className="font-mono text-meta uppercase text-ink-600 transition-colors hover:text-ink-950 disabled:pointer-events-none disabled:text-ink-300"
+      >
+        Next →
+      </button>
+    </nav>
   );
 }

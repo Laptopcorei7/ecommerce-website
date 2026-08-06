@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const Order = require("../models/product/order.mongo");
 const Cart = require("../models/product/cart.mongo");
 const Product = require("../models/product/product.mongo");
+const { priceOrder } = require("../lib/pricing");
 
 function generateOrderNumber() {
   const date = new Date();
@@ -101,9 +102,9 @@ async function httpCreateOrder(req, res) {
       });
     }
 
-    const tax = subtotal * 0.1;
-    const shipping = 10.0;
-    const total = subtotal + tax + shipping;
+    // Shared with the storefront so the total shown in the cart is the total
+    // actually charged. See server/src/lib/pricing.js.
+    const totals = priceOrder(subtotal);
 
     const orderNumber = generateOrderNumber();
 
@@ -113,10 +114,10 @@ async function httpCreateOrder(req, res) {
           userId: userId,
           orderNumber: orderNumber,
           items: orderItems,
-          subtotal: subtotal,
-          tax: tax,
-          shipping: shipping,
-          total: total,
+          subtotal: totals.subtotal,
+          tax: totals.tax,
+          shipping: totals.shipping,
+          total: totals.total,
           status: "pending",
           shippingAddress: shippingAddress,
           orderDate: new Date(),

@@ -1,0 +1,12 @@
+{
+  "watch": ["src"],
+  "ext": "js,mjs,cjs,json",
+  "ignore": ["src/**/*.test.js"],
+  "_comment": [
+    "Watch src only. The default (*.*) also covered server/data/, which is",
+    "where the session store lives — so every login, logout and password",
+    "change rewrote sessions.json, nodemon restarted the server, and the",
+    "request that had just authenticated died with ECONNRESET.",
+    "src/data/ still contains real source (the catalogue) and stays watched."
+  ]
+}
