@@ -38,6 +38,13 @@ The palette is printing ink on paper stock: a warm off-white ground
 rules and a step in background tone, the way a printed catalogue divides one
 cell from the next.
 
+Restraint is not an excuse for grey-on-white. Every text colour meets **WCAG AA**
+against the ground it sits on: `ink-600` (6.22:1) is the floor for anything
+carrying meaning, and body copy is 15–16px with metadata at 12–14px. Only
+disabled controls sit lighter, which WCAG 1.4.3 exempts. It was checked by
+walking the rendered DOM and computing the contrast of every text node rather
+than by eye.
+
 Product photography was chosen, not scraped. Every image is a real Unsplash
 photograph picked for a neutral ground and soft light so the grid reads as one
 shop, and every URL is verified before it can be seeded:
