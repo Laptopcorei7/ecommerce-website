@@ -96,7 +96,7 @@ export default function Profile() {
                 className={`relative py-2 text-left font-mono text-meta uppercase transition-colors lg:border-b lg:border-ink-950/12 lg:py-3 ${
                   tab === id
                     ? "text-ink-950"
-                    : "text-ink-500 hover:text-ink-950"
+                    : "text-ink-600 hover:text-ink-950"
                 }`}
               >
                 {label}
@@ -113,20 +113,20 @@ export default function Profile() {
           <dl className="mt-10 space-y-4">
             <div>
               <dt className="meta">Email</dt>
-              <dd className="mt-1 truncate text-[13px] text-ink-800">
+              <dd className="mt-1 truncate text-[15px] text-ink-800">
                 {user?.email}
               </dd>
             </div>
             <div>
               <dt className="meta">Member since</dt>
-              <dd className="mt-1 font-mono text-[13px] tabular text-ink-800">
+              <dd className="mt-1 font-mono text-[15px] tabular text-ink-800">
                 {formatDate(user?.createdAt)}
               </dd>
             </div>
             {user?.role === "admin" && (
               <div>
                 <dt className="meta">Role</dt>
-                <dd className="mt-1 font-mono text-[13px] uppercase text-vermilion-600">
+                <dd className="mt-1 font-mono text-[15px] uppercase text-vermilion-600">
                   Administrator
                 </dd>
               </div>
@@ -139,7 +139,7 @@ export default function Profile() {
           {tab === "profile" ? (
             <form onSubmit={handleSaveProfile} className="max-w-md">
               <p className="meta-strong">Your details</p>
-              <p className="mt-3 text-[13px] leading-relaxed text-ink-600">
+              <p className="mt-3 text-[15px] leading-relaxed text-ink-600">
                 Your name appears on orders and on any reviews you write.
               </p>
 
@@ -172,7 +172,7 @@ export default function Profile() {
           ) : (
             <form onSubmit={handleChangePassword} className="max-w-md">
               <p className="meta-strong">Change password</p>
-              <p className="mt-3 text-[13px] leading-relaxed text-ink-600">
+              <p className="mt-3 text-[15px] leading-relaxed text-ink-600">
                 Changing your password signs out every other session, on every
                 device.
               </p>

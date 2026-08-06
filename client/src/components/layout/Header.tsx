@@ -110,7 +110,7 @@ export default function Header() {
                     className={`relative py-1 font-mono text-meta uppercase transition-colors duration-200 ${
                       isActive
                         ? "text-ink-950"
-                        : "text-ink-500 hover:text-ink-950"
+                        : "text-ink-600 hover:text-ink-950"
                     }`}
                   >
                     {label}
@@ -148,7 +148,7 @@ export default function Header() {
             >
               Bag
               <span
-                className={`tabular ${itemCount > 0 ? "text-vermilion-600" : "text-ink-300"}`}
+                className={`tabular ${itemCount > 0 ? "text-vermilion-600" : "text-ink-600"}`}
               >
                 ({itemCount > 99 ? "99+" : itemCount})
               </span>
@@ -163,7 +163,7 @@ export default function Header() {
                   aria-haspopup="menu"
                   className="flex items-center gap-2 font-mono text-meta uppercase text-ink-600 transition-colors hover:text-ink-950"
                 >
-                  <span className="grid h-6 w-6 place-items-center border border-ink-950/24 text-[10px] text-ink-950">
+                  <span className="grid h-6 w-6 place-items-center border border-ink-950/24 text-[12px] text-ink-950">
                     {user?.name?.charAt(0).toUpperCase()}
                   </span>
                   <span className="max-w-[7rem] truncate">
@@ -178,7 +178,7 @@ export default function Header() {
                   >
                     <div className="border-b border-ink-950/12 px-4 py-3">
                       <p className="meta">Signed in as</p>
-                      <p className="mt-1 truncate text-[13px] text-ink-950">
+                      <p className="mt-1 truncate text-[15px] text-ink-950">
                         {user?.email}
                       </p>
                     </div>
@@ -192,7 +192,7 @@ export default function Header() {
                         key={to}
                         to={to}
                         role="menuitem"
-                        className="block px-4 py-2.5 text-[13px] text-ink-700 transition-colors hover:bg-ink-950/5 hover:text-ink-950"
+                        className="block px-4 py-2.5 text-[15px] text-ink-700 transition-colors hover:bg-ink-950/5 hover:text-ink-950"
                       >
                         {label}
                       </Link>
@@ -202,7 +202,7 @@ export default function Header() {
                       <Link
                         to="/admin"
                         role="menuitem"
-                        className="block px-4 py-2.5 text-[13px] text-vermilion-600 transition-colors hover:bg-vermilion-600/8"
+                        className="block px-4 py-2.5 text-[15px] text-vermilion-600 transition-colors hover:bg-vermilion-600/8"
                       >
                         Admin panel
                       </Link>
@@ -212,7 +212,7 @@ export default function Header() {
                       type="button"
                       role="menuitem"
                       onClick={handleLogout}
-                      className="w-full border-t border-ink-950/12 px-4 py-2.5 text-left font-mono text-meta uppercase text-ink-500 transition-colors hover:bg-ink-950/5 hover:text-ink-950"
+                      className="w-full border-t border-ink-950/12 px-4 py-2.5 text-left font-mono text-meta uppercase text-ink-600 transition-colors hover:bg-ink-950/5 hover:text-ink-950"
                     >
                       Sign out
                     </button>
@@ -276,7 +276,7 @@ export default function Header() {
                 end={end}
                 className={({ isActive }) =>
                   `display-sm py-5 text-2xl transition-colors ${
-                    isActive ? "text-ink-950" : "text-ink-500"
+                    isActive ? "text-ink-950" : "text-ink-600"
                   }`
                 }
               >

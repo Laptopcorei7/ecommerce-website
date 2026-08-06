@@ -43,7 +43,7 @@ function PasswordStrength({ password }: { password: string }) {
           />
         ))}
       </div>
-      <p className="mt-1.5 font-mono text-meta-xs uppercase text-ink-500">
+      <p className="mt-1.5 font-mono text-meta-xs uppercase text-ink-600">
         {label}
       </p>
     </div>
@@ -113,7 +113,7 @@ export default function Register() {
         {formError && (
           <p
             role="alert"
-            className="mb-5 border-l-2 border-vermilion-600 bg-vermilion-600/5 px-3 py-2 text-[13px] text-vermilion-700"
+            className="mb-5 border-l-2 border-vermilion-600 bg-vermilion-600/5 px-3 py-2 text-[15px] text-vermilion-700"
           >
             {formError}
           </p>
@@ -174,7 +174,7 @@ export default function Register() {
           Create account
         </Button>
 
-        <p className="mt-4 text-[12px] leading-relaxed text-ink-500">
+        <p className="mt-4 text-[13px] leading-relaxed text-ink-600">
           We'll only email you about orders. No newsletter unless you ask.
         </p>
       </form>

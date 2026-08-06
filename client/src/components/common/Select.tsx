@@ -54,7 +54,7 @@ export default function Select({
         <svg
           aria-hidden
           viewBox="0 0 24 24"
-          className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-500"
+          className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-600"
           fill="none"
           stroke="currentColor"
           strokeWidth={1.5}
@@ -64,7 +64,7 @@ export default function Select({
       </div>
 
       {error && (
-        <p id={errorId} className="mt-1.5 text-xs text-vermilion-700">
+        <p id={errorId} className="mt-1.5 text-[13px] text-vermilion-700">
           {error}
         </p>
       )}

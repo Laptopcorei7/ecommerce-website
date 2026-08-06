@@ -63,14 +63,23 @@ export default {
 
       fontSize: {
         // Metadata sizes — always paired with font-mono and wide tracking.
+        //
+        // These were 10/11/12px, which is too small to read comfortably even
+        // with good eyesight; uppercase mono is harder to read than lowercase
+        // at any given size, and tracking makes it harder still. Raised to
+        // 12/13/14px, with tracking easing off as size grows. None of it
+        // stops reading as metadata for being legible.
         "meta-xs": [
-          "0.625rem",
-          { lineHeight: "1rem", letterSpacing: "0.12em" },
-        ],
-        meta: ["0.6875rem", { lineHeight: "1rem", letterSpacing: "0.1em" }],
-        "meta-lg": [
           "0.75rem",
-          { lineHeight: "1.125rem", letterSpacing: "0.08em" },
+          { lineHeight: "1.125rem", letterSpacing: "0.1em" },
+        ],
+        meta: [
+          "0.8125rem",
+          { lineHeight: "1.25rem", letterSpacing: "0.085em" },
+        ],
+        "meta-lg": [
+          "0.875rem",
+          { lineHeight: "1.375rem", letterSpacing: "0.07em" },
         ],
 
         // Display sizes. Tracking tightens as size grows, which is how

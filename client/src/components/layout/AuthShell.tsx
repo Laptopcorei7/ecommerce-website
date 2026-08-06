@@ -58,19 +58,19 @@ export default function AuthShell({
         <div className="w-full max-w-sm">
           <p className="meta-accent">{eyebrow}</p>
           <h1 className="display-sm mt-4 text-ink-950">{title}</h1>
-          <p className="mt-3 text-[14px] leading-relaxed text-ink-600">
+          <p className="mt-3 text-[15px] leading-relaxed text-ink-600">
             {intro}
           </p>
 
           <div className="mt-8">{children}</div>
 
-          <div className="mt-8 border-t border-ink-950/12 pt-6 text-[13px] text-ink-600">
+          <div className="mt-8 border-t border-ink-950/12 pt-6 text-[15px] text-ink-600">
             {footer}
           </div>
 
           <Link
             to="/"
-            className="mt-8 inline-block font-mono text-meta uppercase text-ink-400 underline-offset-4 transition-colors hover:text-ink-950 hover:underline"
+            className="mt-8 inline-block font-mono text-meta uppercase text-ink-600 underline-offset-4 transition-colors hover:text-ink-950 hover:underline"
           >
             ← Back to the shop
           </Link>

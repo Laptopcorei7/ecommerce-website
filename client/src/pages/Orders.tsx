@@ -57,7 +57,7 @@ export default function Orders() {
       <div className="shell py-32 text-center">
         <p className="meta">Orders</p>
         <h1 className="display mt-4 text-ink-950">No orders yet</h1>
-        <p className="mx-auto mt-4 max-w-sm text-[15px] leading-relaxed text-ink-600">
+        <p className="mx-auto mt-4 max-w-sm text-[16px] leading-relaxed text-ink-600">
           When you place an order it will appear here, with its status and the
           address it's going to.
         </p>
@@ -75,7 +75,7 @@ export default function Orders() {
           <p className="meta">Orders</p>
           <h1 className="display-sm mt-3 text-ink-950">Your order history</h1>
         </div>
-        <p className="shrink-0 font-mono text-meta uppercase tabular text-ink-500">
+        <p className="shrink-0 font-mono text-meta uppercase tabular text-ink-600">
           {pluralize(orders.length, "order")}
         </p>
       </header>
@@ -92,7 +92,7 @@ export default function Orders() {
                   <p className="font-mono text-meta uppercase text-ink-950">
                     {order.orderNumber}
                   </p>
-                  <p className="mt-1 font-mono text-meta-xs uppercase text-ink-400">
+                  <p className="mt-1 font-mono text-meta-xs uppercase text-ink-600">
                     {formatDate(order.orderDate)} ·{" "}
                     {pluralize(order.itemCount, "item")}
                   </p>
@@ -100,7 +100,7 @@ export default function Orders() {
 
                 <OrderStatusBadge status={order.status} />
 
-                <span className="font-mono text-sm tabular text-ink-950">
+                <span className="font-mono text-[15px] tabular text-ink-950">
                   {formatExactPrice(order.total)}
                 </span>
 
@@ -108,7 +108,7 @@ export default function Orders() {
                   type="button"
                   onClick={() => setExpanded(isOpen ? null : order.id)}
                   aria-expanded={isOpen}
-                  className="font-mono text-meta uppercase text-ink-500 underline-offset-4 transition-colors hover:text-ink-950 hover:underline"
+                  className="font-mono text-meta uppercase text-ink-600 underline-offset-4 transition-colors hover:text-ink-950 hover:underline"
                 >
                   {isOpen ? "Hide" : "Details"}
                 </button>
@@ -124,11 +124,11 @@ export default function Orders() {
                         {order.items.map((item, i) => (
                           <li
                             key={`${order.id}-${i}`}
-                            className="flex justify-between gap-4 text-[13px]"
+                            className="flex justify-between gap-4 text-[15px]"
                           >
                             <span className="text-ink-700">
                               {item.name}
-                              <span className="text-ink-400">
+                              <span className="text-ink-600">
                                 {" "}
                                 × {item.quantity}
                               </span>
@@ -140,12 +140,12 @@ export default function Orders() {
                         ))}
                       </ul>
                     ) : (
-                      <p className="mt-3 text-[13px] text-ink-500">
+                      <p className="mt-3 text-[15px] text-ink-600">
                         Line items aren't available for this order.
                       </p>
                     )}
 
-                    <dl className="mt-4 space-y-1.5 border-t border-ink-950/12 pt-4 text-[13px]">
+                    <dl className="mt-4 space-y-1.5 border-t border-ink-950/12 pt-4 text-[15px]">
                       {order.subtotal !== undefined && (
                         <div className="flex justify-between gap-4">
                           <dt className="text-ink-600">Subtotal</dt>
@@ -184,7 +184,7 @@ export default function Orders() {
                   {/* Address + actions */}
                   <div>
                     <p className="meta">Shipping to</p>
-                    <address className="mt-3 not-italic text-[13px] leading-relaxed text-ink-700">
+                    <address className="mt-3 not-italic text-[15px] leading-relaxed text-ink-700">
                       {order.shippingAddress?.street}
                       <br />
                       {order.shippingAddress?.city}
@@ -197,7 +197,7 @@ export default function Orders() {
                     </address>
 
                     {order.deliveryDate && (
-                      <p className="mt-4 font-mono text-meta uppercase text-ink-500">
+                      <p className="mt-4 font-mono text-meta uppercase text-ink-600">
                         Delivered {formatDate(order.deliveryDate)}
                       </p>
                     )}

@@ -38,7 +38,7 @@ export default function Footer() {
             >
               Sundry
             </p>
-            <p className="mt-5 max-w-prose text-[15px] leading-relaxed text-ink-700">
+            <p className="mt-5 max-w-prose text-[16px] leading-relaxed text-ink-700">
               A general store for well-made everyday objects. We stock one of a
               thing rather than nine, and only after we have lived with it long
               enough to have an opinion.
@@ -47,13 +47,13 @@ export default function Footer() {
             <dl className="mt-8 grid max-w-sm grid-cols-2 gap-x-6 gap-y-4">
               <div>
                 <dt className="meta">Established</dt>
-                <dd className="mt-1 font-mono text-sm tabular text-ink-950">
+                <dd className="mt-1 font-mono text-[15px] tabular text-ink-950">
                   2019
                 </dd>
               </div>
               <div>
                 <dt className="meta">Items stocked</dt>
-                <dd className="mt-1 font-mono text-sm tabular text-ink-950">
+                <dd className="mt-1 font-mono text-[15px] tabular text-ink-950">
                   43
                 </dd>
               </div>
@@ -70,7 +70,7 @@ export default function Footer() {
                     <li key={label}>
                       <Link
                         to={to}
-                        className="text-[13px] text-ink-600 transition-colors hover:text-ink-950"
+                        className="text-[15px] text-ink-600 transition-colors hover:text-ink-950"
                       >
                         {label}
                       </Link>

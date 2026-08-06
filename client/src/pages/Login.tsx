@@ -61,7 +61,7 @@ export default function Login() {
         {formError && (
           <p
             role="alert"
-            className="mb-5 border-l-2 border-vermilion-600 bg-vermilion-600/5 px-3 py-2 text-[13px] text-vermilion-700"
+            className="mb-5 border-l-2 border-vermilion-600 bg-vermilion-600/5 px-3 py-2 text-[15px] text-vermilion-700"
           >
             {formError}
           </p>
@@ -91,7 +91,7 @@ export default function Login() {
                 type="button"
                 onClick={() => setShowPassword((s) => !s)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
-                className="font-mono text-meta-xs uppercase text-ink-400 transition-colors hover:text-ink-950"
+                className="font-mono text-meta-xs uppercase text-ink-600 transition-colors hover:text-ink-950"
               >
                 {showPassword ? "Hide" : "Show"}
               </button>

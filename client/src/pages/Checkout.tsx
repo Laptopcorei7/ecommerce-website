@@ -120,7 +120,7 @@ export default function Checkout() {
       <div className="shell py-32 text-center">
         <p className="meta">Checkout</p>
         <h1 className="display mt-4 text-ink-950">Your bag is empty</h1>
-        <p className="mx-auto mt-4 max-w-sm text-[15px] leading-relaxed text-ink-600">
+        <p className="mx-auto mt-4 max-w-sm text-[16px] leading-relaxed text-ink-600">
           There's nothing to check out. Add something first.
         </p>
         <Link to="/" className="btn-primary mt-8">
@@ -204,8 +204,8 @@ export default function Checkout() {
                       {method.label}
                     </span>
                     <span
-                      className={`mt-1.5 block text-[12px] ${
-                        selected ? "text-paper-200" : "text-ink-500"
+                      className={`mt-1.5 block text-[13px] ${
+                        selected ? "text-paper-200" : "text-ink-600"
                       }`}
                     >
                       {method.detail}
@@ -215,7 +215,7 @@ export default function Checkout() {
               })}
             </div>
 
-            <p className="mt-4 border-l-2 border-clay pl-3 text-[12px] leading-relaxed text-ink-500">
+            <p className="mt-4 border-l-2 border-clay pl-3 text-[13px] leading-relaxed text-ink-600">
               This is a portfolio build. No payment is taken, no card details
               are requested, and nothing is stored. Placing the order writes a
               record and decrements stock, exactly as the real flow would.
@@ -232,11 +232,11 @@ export default function Checkout() {
               {items.map((item) => (
                 <li
                   key={item.id}
-                  className="flex justify-between gap-4 text-[13px]"
+                  className="flex justify-between gap-4 text-[15px]"
                 >
                   <span className="text-ink-700">
                     {item.product.name}
-                    <span className="text-ink-400"> × {item.quantity}</span>
+                    <span className="text-ink-600"> × {item.quantity}</span>
                   </span>
                   <span className="shrink-0 font-mono tabular text-ink-950">
                     {formatExactPrice(item.subtotal)}
@@ -245,7 +245,7 @@ export default function Checkout() {
               ))}
             </ul>
 
-            <dl className="mt-5 space-y-3 border-t border-ink-950/12 pt-5 text-[14px]">
+            <dl className="mt-5 space-y-3 border-t border-ink-950/12 pt-5 text-[15px]">
               <div className="flex justify-between gap-4">
                 <dt className="text-ink-600">Subtotal</dt>
                 <dd className="font-mono tabular text-ink-950">
@@ -291,7 +291,7 @@ export default function Checkout() {
 
             <Link
               to="/cart"
-              className="mt-4 block text-center font-mono text-meta uppercase text-ink-500 underline-offset-4 transition-colors hover:text-ink-950 hover:underline"
+              className="mt-4 block text-center font-mono text-meta uppercase text-ink-600 underline-offset-4 transition-colors hover:text-ink-950 hover:underline"
             >
               Back to bag
             </Link>

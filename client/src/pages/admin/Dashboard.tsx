@@ -41,7 +41,7 @@ function Figure({
       >
         {value}
       </p>
-      {note && <p className="mt-2 text-[12px] text-ink-500">{note}</p>}
+      {note && <p className="mt-2 text-[13px] text-ink-600">{note}</p>}
     </div>
   );
 }
@@ -184,13 +184,13 @@ export default function AdminDashboard() {
               Everything placed
             </h2>
           </div>
-          <p className="shrink-0 font-mono text-meta uppercase tabular text-ink-500">
+          <p className="shrink-0 font-mono text-meta uppercase tabular text-ink-600">
             {orders.length} total
           </p>
         </div>
 
         {orders.length === 0 ? (
-          <p className="mt-8 border border-ink-950/12 px-6 py-16 text-center text-[14px] text-ink-500">
+          <p className="mt-8 border border-ink-950/12 px-6 py-16 text-center text-[15px] text-ink-600">
             No orders have been placed yet.
           </p>
         ) : (
@@ -203,7 +203,7 @@ export default function AdminDashboard() {
                       <th
                         key={heading}
                         scope="col"
-                        className="py-3 pr-6 font-mono text-meta font-normal uppercase text-ink-500"
+                        className="py-3 pr-6 font-mono text-meta font-normal uppercase text-ink-600"
                       >
                         {heading}
                       </th>
@@ -214,16 +214,16 @@ export default function AdminDashboard() {
               <tbody className="divide-y divide-ink-950/12">
                 {orders.map((order) => (
                   <tr key={order.id} className="align-middle">
-                    <td className="py-4 pr-6 font-mono text-[13px] text-ink-950">
+                    <td className="py-4 pr-6 font-mono text-[15px] text-ink-950">
                       {order.orderNumber}
                     </td>
-                    <td className="py-4 pr-6 font-mono text-[13px] tabular text-ink-600">
+                    <td className="py-4 pr-6 font-mono text-[15px] tabular text-ink-600">
                       {formatDate(order.orderDate)}
                     </td>
-                    <td className="py-4 pr-6 font-mono text-[13px] tabular text-ink-600">
+                    <td className="py-4 pr-6 font-mono text-[15px] tabular text-ink-600">
                       {order.itemCount}
                     </td>
-                    <td className="py-4 pr-6 font-mono text-[13px] tabular text-ink-950">
+                    <td className="py-4 pr-6 font-mono text-[15px] tabular text-ink-950">
                       {formatExactPrice(order.total)}
                     </td>
                     <td className="py-4 pr-6">

@@ -56,7 +56,7 @@ export default function AdminLogin() {
         {formError && (
           <p
             role="alert"
-            className="mb-5 border-l-2 border-vermilion-600 bg-vermilion-600/5 px-3 py-2 text-[13px] text-vermilion-700"
+            className="mb-5 border-l-2 border-vermilion-600 bg-vermilion-600/5 px-3 py-2 text-[15px] text-vermilion-700"
           >
             {formError}
           </p>

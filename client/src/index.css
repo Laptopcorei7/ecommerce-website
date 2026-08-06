@@ -80,7 +80,7 @@
      treatment does most of the work of making the design look like retail
      rather than a dashboard. */
   .meta {
-    @apply font-mono text-meta uppercase text-ink-500;
+    @apply font-mono text-meta uppercase text-ink-600;
   }
   .meta-strong {
     @apply font-mono text-meta uppercase text-ink-950;
@@ -106,7 +106,7 @@
      scaling the whole control, which reads as a physical key. */
   .btn {
     @apply inline-flex items-center justify-center gap-2 px-6 h-11 rounded-sm
-           font-medium text-sm tracking-tight
+           font-medium text-[15px] tracking-tight
            transition-[background-color,color,border-color,transform] duration-200 ease-out
            disabled:opacity-40 disabled:pointer-events-none
            active:translate-y-px;
@@ -124,7 +124,7 @@
     @apply btn px-3 text-ink-600 hover:text-ink-950 hover:bg-ink-950/5;
   }
   .btn-sm {
-    @apply h-9 px-4 text-[13px];
+    @apply h-9 px-4 text-[14px];
   }
   .btn-lg {
     @apply h-12 px-8;
@@ -135,7 +135,7 @@
      one reads as a printed order slip. */
   .field {
     @apply w-full h-11 px-3 bg-paper-50 border border-ink-950/16 rounded-sm
-           text-sm text-ink-950 placeholder:text-ink-400
+           text-[15px] text-ink-950 placeholder:text-ink-600
            transition-colors duration-150
            focus:outline-none focus:border-ink-950
            disabled:bg-ink-50 disabled:text-ink-400 disabled:cursor-not-allowed;
