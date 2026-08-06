@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useId } from "react";
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -20,43 +20,61 @@ export default function Input({
   id,
   ...props
 }: InputProps) {
-  const inputId = id || label?.toLowerCase().replace(/\s+/g, "-");
+  // Deriving the id from the label breaks the moment two fields share one
+  // ("Name" on both a shipping and a billing block). useId is unique per node.
+  const generatedId = useId();
+  const inputId = id ?? generatedId;
+  const messageId = `${inputId}-message`;
+
   return (
     <div className={fullWidth ? "w-full" : ""}>
       {label && (
-        <label
-          htmlFor={inputId}
-          className="block text-sm font-medium text-ink-700 mb-1.5"
-        >
+        <label htmlFor={inputId} className="label">
           {label}
-          {props.required && <span className="text-red-400 ml-1">*</span>}
+          {props.required && (
+            <span className="ml-1 text-vermilion-600" aria-hidden>
+              *
+            </span>
+          )}
         </label>
       )}
+
       <div className="relative">
         {leftIcon && (
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-ink-400">
+          <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-ink-600">
             {leftIcon}
-          </div>
+          </span>
         )}
+
         <input
           id={inputId}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error || hint ? messageId : undefined}
           {...props}
           className={`
-            input-field
-            ${error ? "border-red-400 focus:border-red-400 focus:ring-red-100" : ""}
+            field
+            ${error ? "field-invalid" : ""}
             ${leftIcon ? "pl-10" : ""}
             ${rightIcon ? "pr-10" : ""}
             ${className}
           `}
         />
+
         {rightIcon && (
-          <div className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-ink-400">
+          <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-ink-600">
             {rightIcon}
-          </div>
+          </span>
         )}
       </div>
-      {error && <p className="mt-1.5 text-xs text-red-500">{error}</p>}
-      {!error && hint && <p className="mt-1.5 text-xs text-ink-400">{hint}</p>}
+
+      {(error || hint) && (
+        <p
+          id={messageId}
+          className={`mt-1.5 text-[13px] ${error ? "text-vermilion-700" : "text-ink-600"}`}
+        >
+          {error || hint}
+        </p>
+      )}
     </div>
   );
 }

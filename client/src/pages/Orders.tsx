@@ -2,264 +2,226 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ordersApi } from "@/api";
 import type { Order } from "@/types";
+import { useToast } from "@/contexts/ToastContext";
 import Loading from "@/components/common/Loading";
 import { OrderStatusBadge } from "@/components/common/Badge";
-import { useToast } from "@/contexts/ToastContext";
+import Button from "@/components/common/Button";
+import { formatExactPrice, formatDate, pluralize } from "@/lib/format";
+
+/** Only these can still be called off by the customer. */
+const CANCELLABLE = new Set(["pending", "processing"]);
 
 export default function Orders() {
+  const { success, error } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
-  const [orderDetails, setOrderDetails] = useState<Record<string, Order>>({});
-  const { success, error } = useToast();
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [cancelling, setCancelling] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     ordersApi
       .getUserOrders()
-      .then((data) => setOrders(data.orders)) // ← unwrap the orders array
-      .catch(() => setOrders([]))
-      .finally(() => setIsLoading(false));
+      .then((res) => {
+        if (!cancelled) setOrders(res.orders ?? []);
+      })
+      .catch((err) => {
+        console.error("Failed to load orders", err);
+        if (!cancelled) setOrders([]);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  if (isLoading) return <Loading fullPage message="Loading orders…" />;
-
-  const handleExpand = async (orderId: string) => {
-    if (expandedOrder === orderId) {
-      setExpandedOrder(null);
-      return;
-    }
-    setExpandedOrder(orderId);
-    if (!orderDetails[orderId]) {
-      try {
-        const res = await ordersApi.getById(orderId);
-        setOrderDetails((prev) => ({ ...prev, [orderId]: res.order }));
-      } catch {
-        // silently fail
-      }
-    }
-  };
-
-  const handleCancel = async (orderId: string) => {
+  async function handleCancel(id: string, orderNumber: string) {
+    setCancelling(id);
     try {
-      await ordersApi.cancel(orderId);
-      // update the order status in local state
-      setOrders((prev) =>
-        prev.map((o) =>
-          String(o.id) === orderId ? { ...o, status: "cancelled" } : o,
-        ),
-      );
-      setOrderDetails((prev) => ({
-        ...prev,
-        [orderId]: { ...prev[orderId], status: "cancelled" },
-      }));
-      success("Order cancelled successfully");
+      const res = await ordersApi.cancel(id);
+      setOrders((prev) => prev.map((o) => (o.id === id ? res.order : o)));
+      success(`Order ${orderNumber} cancelled. Stock has been returned.`);
     } catch (err) {
-      error((err as Error).message || "Failed to cancel order");
+      error((err as Error).message || "Could not cancel that order.");
+    } finally {
+      setCancelling(null);
     }
-  };
+  }
+
+  if (isLoading) return <Loading message="Loading your orders" />;
+
+  if (orders.length === 0) {
+    return (
+      <div className="shell py-32 text-center">
+        <p className="meta">Orders</p>
+        <h1 className="display mt-4 text-ink-950">No orders yet</h1>
+        <p className="mx-auto mt-4 max-w-sm text-[16px] leading-relaxed text-ink-600">
+          When you place an order it will appear here, with its status and the
+          address it's going to.
+        </p>
+        <Link to="/" className="btn-primary mt-8">
+          Browse the index
+        </Link>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Order History</h1>
-
-      {orders.length === 0 ? (
-        <div className="text-center py-20">
-          <svg
-            className="w-16 h-16 mx-auto text-gray-200 mb-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-            />
-          </svg>
-          <h3 className="text-lg font-semibold text-gray-700">No orders yet</h3>
-          <p className="text-gray-500 mt-1 text-sm">
-            Your orders will appear here once you make a purchase.
-          </p>
-          <Link
-            to="/"
-            className="mt-5 inline-block px-5 py-2.5 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors"
-          >
-            Start Shopping
-          </Link>
+    <div className="shell py-12">
+      <header className="flex items-end justify-between gap-6 border-b border-ink-950/12 pb-6">
+        <div>
+          <p className="meta">Orders</p>
+          <h1 className="display-sm mt-3 text-ink-950">Your order history</h1>
         </div>
-      ) : (
-        <div className="space-y-4">
-          {orders.map((order) => {
-            const isExpanded = expandedOrder === order.id;
-            return (
-              <div
-                key={order.id}
-                className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm"
-              >
-                {/* Order header */}
-                <div
-                  className="flex flex-wrap items-center justify-between gap-4 p-5 cursor-pointer hover:bg-gray-50 transition-colors"
-                  onClick={() => handleExpand(String(order.id))}
-                >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-3">
-                      <p className="font-semibold text-gray-900 text-sm">
-                        {order.orderNumber}
-                      </p>
-                      <OrderStatusBadge status={order.status} />
-                    </div>
-                    <p className="text-xs text-gray-400">
-                      Placed on{" "}
-                      {new Date(order.orderDate).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-6">
-                    <div className="text-right">
-                      <p className="text-xs text-gray-400">Total</p>
-                      <p className="font-bold text-gray-900">
-                        ${order.total?.toFixed(2)}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-gray-400">Items</p>
-                      <p className="font-semibold text-gray-700">
-                        {order.itemCount ?? 0}
-                      </p>
-                    </div>
-                    <svg
-                      className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </div>
+        <p className="shrink-0 font-mono text-meta uppercase tabular text-ink-600">
+          {pluralize(orders.length, "order")}
+        </p>
+      </header>
+
+      <ul className="divide-y divide-ink-950/12 border-b border-ink-950/12">
+        {orders.map((order) => {
+          const isOpen = expanded === order.id;
+          const canCancel = CANCELLABLE.has(order.status);
+
+          return (
+            <li key={order.id}>
+              <div className="flex flex-wrap items-center gap-x-8 gap-y-3 py-5">
+                <div className="min-w-0 flex-1">
+                  <p className="font-mono text-meta uppercase text-ink-950">
+                    {order.orderNumber}
+                  </p>
+                  <p className="mt-1 font-mono text-meta-xs uppercase text-ink-600">
+                    {formatDate(order.orderDate)} ·{" "}
+                    {pluralize(order.itemCount, "item")}
+                  </p>
                 </div>
 
-                {/* Expanded details */}
-                {isExpanded && (
-                  <div className="border-t border-gray-100 p-5 space-y-5">
-                    {orderDetails[String(order.id)] ? (
-                      <>
-                        {/* Items */}
-                        <div className="space-y-3">
-                          <h3 className="text-sm font-semibold text-gray-700">
-                            Items
-                          </h3>
-                          {orderDetails[String(order.id)].items?.map((item) => (
-                            <div
-                              key={item.id}
-                              className="flex items-center gap-3"
-                            >
-                              <div className="flex-1">
-                                <p className="text-sm font-medium text-gray-900">
-                                  {item.name}
-                                </p>
-                                <p className="text-xs text-gray-400">
-                                  Qty: {item.quantity} × $
-                                  {item.price?.toFixed(2)}
-                                </p>
-                              </div>
-                              <p className="text-sm font-semibold text-gray-900">
-                                ${item.subtotal?.toFixed(2)}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
+                <OrderStatusBadge status={order.status} />
 
-                        {/* Shipping address */}
-                        {orderDetails[String(order.id)].shippingAddress && (
-                          <div>
-                            <h3 className="text-sm font-semibold text-gray-700 mb-1">
-                              Shipping Address
-                            </h3>
-                            <p className="text-sm text-gray-600">
-                              {
-                                orderDetails[String(order.id)].shippingAddress
-                                  .street
-                              }
-                              ,{" "}
-                              {
-                                orderDetails[String(order.id)].shippingAddress
-                                  .city
-                              }
-                              ,{" "}
-                              {
-                                orderDetails[String(order.id)].shippingAddress
-                                  .country
-                              }
-                            </p>
-                          </div>
-                        )}
+                <span className="font-mono text-[15px] tabular text-ink-950">
+                  {formatExactPrice(order.total)}
+                </span>
 
-                        {/* Totals */}
-                        <div className="bg-gray-50 rounded-xl p-4 space-y-2 text-sm">
-                          <div className="flex justify-between text-gray-600">
-                            <span>Subtotal</span>
-                            <span>
-                              $
-                              {orderDetails[String(order.id)].subtotal?.toFixed(
-                                2,
-                              )}
-                            </span>
-                          </div>
-                          <div className="flex justify-between text-gray-600">
-                            <span>Tax</span>
-                            <span>
-                              ${orderDetails[String(order.id)].tax?.toFixed(2)}
-                            </span>
-                          </div>
-                          <div className="flex justify-between text-gray-600">
-                            <span>Shipping</span>
-                            <span>
-                              $
-                              {orderDetails[String(order.id)].shipping?.toFixed(
-                                2,
-                              )}
-                            </span>
-                          </div>
-                          <div className="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-200">
-                            <span>Total</span>
-                            <span>
-                              $
-                              {orderDetails[String(order.id)].total?.toFixed(2)}
-                            </span>
-                          </div>
-                        </div>
-                        {["pending", "paid"].includes(
-                          orderDetails[String(order.id)]?.status,
-                        ) && (
-                          <button
-                            onClick={() => handleCancel(String(order.id))}
-                            className="w-full mt-2 py-2 text-sm font-medium text-red-600 border border-red-200 rounded-xl hover:bg-red-50 transition-colors"
+                <button
+                  type="button"
+                  onClick={() => setExpanded(isOpen ? null : order.id)}
+                  aria-expanded={isOpen}
+                  className="font-mono text-meta uppercase text-ink-600 underline-offset-4 transition-colors hover:text-ink-950 hover:underline"
+                >
+                  {isOpen ? "Hide" : "Details"}
+                </button>
+              </div>
+
+              {isOpen && (
+                <div className="animate-rise grid gap-8 pb-8 md:grid-cols-2">
+                  {/* Lines */}
+                  <div>
+                    <p className="meta">Items</p>
+                    {order.items?.length ? (
+                      <ul className="mt-3 space-y-2">
+                        {order.items.map((item, i) => (
+                          <li
+                            key={`${order.id}-${i}`}
+                            className="flex justify-between gap-4 text-[15px]"
                           >
-                            Cancel Order
-                          </button>
-                        )}
-                      </>
+                            <span className="text-ink-700">
+                              {item.name}
+                              <span className="text-ink-600">
+                                {" "}
+                                × {item.quantity}
+                              </span>
+                            </span>
+                            <span className="shrink-0 font-mono tabular text-ink-950">
+                              {formatExactPrice(item.subtotal)}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
                     ) : (
-                      <p className="text-sm text-gray-400 text-center py-4">
-                        Loading order details...
+                      <p className="mt-3 text-[15px] text-ink-600">
+                        Line items aren't available for this order.
                       </p>
                     )}
+
+                    <dl className="mt-4 space-y-1.5 border-t border-ink-950/12 pt-4 text-[15px]">
+                      {order.subtotal !== undefined && (
+                        <div className="flex justify-between gap-4">
+                          <dt className="text-ink-600">Subtotal</dt>
+                          <dd className="font-mono tabular text-ink-950">
+                            {formatExactPrice(order.subtotal)}
+                          </dd>
+                        </div>
+                      )}
+                      {order.tax !== undefined && (
+                        <div className="flex justify-between gap-4">
+                          <dt className="text-ink-600">Tax</dt>
+                          <dd className="font-mono tabular text-ink-950">
+                            {formatExactPrice(order.tax)}
+                          </dd>
+                        </div>
+                      )}
+                      {order.shipping !== undefined && (
+                        <div className="flex justify-between gap-4">
+                          <dt className="text-ink-600">Shipping</dt>
+                          <dd className="font-mono tabular text-ink-950">
+                            {order.shipping === 0
+                              ? "Free"
+                              : formatExactPrice(order.shipping)}
+                          </dd>
+                        </div>
+                      )}
+                      <div className="flex justify-between gap-4 border-t border-ink-950/12 pt-1.5">
+                        <dt className="font-medium text-ink-950">Total</dt>
+                        <dd className="font-mono tabular text-ink-950">
+                          {formatExactPrice(order.total)}
+                        </dd>
+                      </div>
+                    </dl>
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
+
+                  {/* Address + actions */}
+                  <div>
+                    <p className="meta">Shipping to</p>
+                    <address className="mt-3 not-italic text-[15px] leading-relaxed text-ink-700">
+                      {order.shippingAddress?.street}
+                      <br />
+                      {order.shippingAddress?.city}
+                      {order.shippingAddress?.state &&
+                        `, ${order.shippingAddress.state}`}
+                      {order.shippingAddress?.zipCode &&
+                        ` ${order.shippingAddress.zipCode}`}
+                      <br />
+                      {order.shippingAddress?.country}
+                    </address>
+
+                    {order.deliveryDate && (
+                      <p className="mt-4 font-mono text-meta uppercase text-ink-600">
+                        Delivered {formatDate(order.deliveryDate)}
+                      </p>
+                    )}
+
+                    {canCancel && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-5"
+                        isLoading={cancelling === order.id}
+                        onClick={() =>
+                          handleCancel(order.id, order.orderNumber)
+                        }
+                      >
+                        Cancel order
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }

@@ -32,7 +32,7 @@ interface AuthContextValue {
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const ADMIN_SESSION_KEY = "luxe_admin_session";
+const ADMIN_SESSION_KEY = "sundry_admin_session";
 
 // ─── Context ─────────────────────────────────────────────────────────────────
 

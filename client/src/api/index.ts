@@ -4,6 +4,7 @@ import type {
   ProductsResponse,
   ProductFilters,
   Review,
+  ProductReviewsResponse,
   CreateReviewPayload,
   Cart,
   CartItem,
@@ -157,11 +158,17 @@ export const productsApi = {
 // ─── Reviews ─────────────────────────────────────────────────────────────────
 
 export const reviewsApi = {
-  getByProduct: (productId: string) =>
-    api.get<Review[]>(`/products/${productId}/reviews`),
+  getByProduct: (
+    productId: string,
+    params?: { page?: number; limit?: number; sort?: string },
+  ) =>
+    api.get<ProductReviewsResponse>(`/products/${productId}/reviews`, params),
 
   create: (productId: string, data: CreateReviewPayload) =>
-    api.post<Review>(`/products/${productId}/reviews`, data),
+    api.post<{ message: string; review: Review }>(
+      `/products/${productId}/reviews`,
+      data,
+    ),
 };
 
 // ─── Cart ─────────────────────────────────────────────────────────────────────

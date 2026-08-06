@@ -1,120 +1,93 @@
 import { Link } from "react-router-dom";
 
+const COLUMNS = [
+  {
+    heading: "Shop",
+    links: [
+      { label: "Everything", to: "/" },
+      { label: "Home", to: "/?category=Home" },
+      { label: "Clothing", to: "/?category=Clothing" },
+      { label: "Electronics", to: "/?category=Electronics" },
+      { label: "Books", to: "/?category=Books" },
+    ],
+  },
+  {
+    heading: "Account",
+    links: [
+      { label: "Sign in", to: "/login" },
+      { label: "Create account", to: "/register" },
+      { label: "Orders", to: "/orders" },
+      { label: "Saved", to: "/wishlist" },
+      { label: "Bag", to: "/cart" },
+    ],
+  },
+];
+
 export default function Footer() {
   return (
-    <footer className="bg-ink-950 text-ink-300 mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
-          {/* Brand */}
-          <div className="md:col-span-1">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center">
-                <span className="text-white font-serif text-sm font-bold">
-                  L
-                </span>
+    <footer className="mt-24 border-t border-ink-950/12 bg-paper-200">
+      <div className="shell py-16">
+        <div className="grid gap-12 md:grid-cols-12">
+          {/* Statement */}
+          <div className="md:col-span-5">
+            <p
+              className="font-serif text-[28px] font-semibold leading-none tracking-tight text-ink-950"
+              style={{
+                fontVariationSettings: '"opsz" 40, "SOFT" 24, "WONK" 1',
+              }}
+            >
+              Sundry
+            </p>
+            <p className="mt-5 max-w-prose text-[16px] leading-relaxed text-ink-700">
+              A general store for well-made everyday objects. We stock one of a
+              thing rather than nine, and only after we have lived with it long
+              enough to have an opinion.
+            </p>
+
+            <dl className="mt-8 grid max-w-sm grid-cols-2 gap-x-6 gap-y-4">
+              <div>
+                <dt className="meta">Established</dt>
+                <dd className="mt-1 font-mono text-[15px] tabular text-ink-950">
+                  2019
+                </dd>
               </div>
-              <span className="font-serif text-xl font-semibold text-white">
-                Luxe
-              </span>
-            </div>
-            <p className="text-sm text-ink-400 leading-relaxed">
-              Curated quality, delivered with care. Premium products for the
-              modern lifestyle.
-            </p>
-            <div className="flex items-center gap-3 mt-5">
-              {["Instagram", "Twitter", "Pinterest"].map((s) => (
-                <a
-                  key={s}
-                  href="#"
-                  className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-ink-300 hover:bg-brand-600 hover:text-white transition-all duration-200 text-xs font-medium"
-                >
-                  {s.charAt(0)}
-                </a>
-              ))}
-            </div>
+              <div>
+                <dt className="meta">Items stocked</dt>
+                <dd className="mt-1 font-mono text-[15px] tabular text-ink-950">
+                  43
+                </dd>
+              </div>
+            </dl>
           </div>
 
-          {/* Shop */}
-          <div>
-            <p className="text-xs font-semibold text-ink-500 uppercase tracking-widest mb-4">
-              Shop
-            </p>
-            <ul className="space-y-2.5">
-              {["New Arrivals", "Best Sellers", "Sale", "All Products"].map(
-                (item) => (
-                  <li key={item}>
-                    <Link
-                      to="/"
-                      className="text-sm text-ink-400 hover:text-white transition-colors duration-200"
-                    >
-                      {item}
-                    </Link>
-                  </li>
-                ),
-              )}
-            </ul>
-          </div>
-
-          {/* Account */}
-          <div>
-            <p className="text-xs font-semibold text-ink-500 uppercase tracking-widest mb-4">
-              Account
-            </p>
-            <ul className="space-y-2.5">
-              {[
-                { label: "My Orders", to: "/orders" },
-                { label: "Wishlist", to: "/wishlist" },
-                { label: "Profile", to: "/profile" },
-                { label: "Sign In", to: "/login" },
-              ].map(({ label, to }) => (
-                <li key={to}>
-                  <Link
-                    to={to}
-                    className="text-sm text-ink-400 hover:text-white transition-colors duration-200"
-                  >
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Newsletter */}
-          <div>
-            <p className="text-xs font-semibold text-ink-500 uppercase tracking-widest mb-4">
-              Stay Updated
-            </p>
-            <p className="text-sm text-ink-400 mb-4 leading-relaxed">
-              Get the latest drops and exclusive offers in your inbox.
-            </p>
-            <div className="flex gap-2">
-              <input
-                type="email"
-                placeholder="your@email.com"
-                className="flex-1 min-w-0 px-3 py-2.5 bg-white/10 border border-white/10 rounded-xl text-sm text-white placeholder:text-ink-500 focus:outline-none focus:border-brand-500 transition-colors"
-              />
-              <button className="px-4 py-2.5 bg-brand-600 text-white rounded-xl text-sm font-medium hover:bg-brand-500 transition-colors whitespace-nowrap">
-                Join
-              </button>
-            </div>
+          {/* Link columns */}
+          <div className="grid grid-cols-2 gap-8 md:col-span-4 md:col-start-8">
+            {COLUMNS.map(({ heading, links }) => (
+              <nav key={heading} aria-label={heading}>
+                <p className="meta">{heading}</p>
+                <ul className="mt-4 space-y-2.5">
+                  {links.map(({ label, to }) => (
+                    <li key={label}>
+                      <Link
+                        to={to}
+                        className="text-[15px] text-ink-600 transition-colors hover:text-ink-950"
+                      >
+                        {label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            ))}
           </div>
         </div>
 
-        <div className="border-t border-white/10 mt-12 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-ink-500">
-            © {new Date().getFullYear()} Luxe. All rights reserved.
+        {/* Colophon */}
+        <div className="mt-16 flex flex-col gap-4 border-t border-ink-950/12 pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <p className="meta">© {new Date().getFullYear()} Sundry</p>
+          <p className="meta">
+            Set in Fraunces, Inter Tight &amp; IBM Plex Mono
           </p>
-          <div className="flex items-center gap-4">
-            {["Privacy Policy", "Terms", "Shipping"].map((item) => (
-              <a
-                key={item}
-                href="#"
-                className="text-xs text-ink-500 hover:text-ink-300 transition-colors"
-              >
-                {item}
-              </a>
-            ))}
-          </div>
         </div>
       </div>
     </footer>

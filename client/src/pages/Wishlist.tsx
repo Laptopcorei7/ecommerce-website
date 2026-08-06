@@ -1,182 +1,143 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { wishlistApi } from "@/api";
-import type { WishlistItem } from "@/types";
+import { useWishlist } from "@/contexts/WishlistContext";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/contexts/ToastContext";
 import Loading from "@/components/common/Loading";
-import Button from "@/components/common/Button";
+import { formatPrice, formatRelative, pluralize } from "@/lib/format";
 
 export default function Wishlist() {
-  const [items, setItems] = useState<WishlistItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [removingId, setRemovingId] = useState<string | null>(null);
-  const [cartLoadingId, setCartLoadingId] = useState<string | null>(null);
+  const { items, isLoading, removeItem } = useWishlist();
   const { addItem } = useCart();
   const { success, error } = useToast();
+  const [busyId, setBusyId] = useState<string | null>(null);
 
-  const fetchWishlist = () => {
-    setIsLoading(true);
-    wishlistApi
-      .get()
-      .then((data) => setItems(data.items))
-      .catch(() => setItems([]))
-      .finally(() => setIsLoading(false));
-  };
-
-  useEffect(() => {
-    fetchWishlist();
-  }, []);
-
-  const handleRemove = async (productId: string) => {
-    setRemovingId(productId);
+  async function handleMoveToBag(productId: string, name: string) {
+    setBusyId(productId);
     try {
-      await wishlistApi.remove(productId);
-      setItems((prev) => prev.filter((item) => item.product.id !== productId));
-      success("Removed from wishlist");
+      await addItem(productId, 1);
+      await removeItem(productId);
+      success(`${name} moved to your bag.`);
     } catch (err) {
-      error((err as Error).message || "Could not remove item");
+      error((err as Error).message || "Could not move that to your bag.");
     } finally {
-      setRemovingId(null);
+      setBusyId(null);
     }
-  };
+  }
 
-  const handleAddToCart = async (item: WishlistItem) => {
-    setCartLoadingId(item.product.id);
+  async function handleRemove(productId: string, name: string) {
+    setBusyId(productId);
     try {
-      await addItem(item.product.id);
-      success(`"${item.product.name}" added to cart`);
-    } catch (err) {
-      error((err as Error).message || "Could not add to cart");
+      await removeItem(productId);
+      success(`Removed ${name}.`);
     } finally {
-      setCartLoadingId(null);
+      setBusyId(null);
     }
-  };
+  }
 
-  if (isLoading) return <Loading fullPage message="Loading wishlist…" />;
+  if (isLoading) return <Loading message="Loading saved items" />;
+
+  if (items.length === 0) {
+    return (
+      <div className="shell py-32 text-center">
+        <p className="meta">Saved</p>
+        <h1 className="display mt-4 text-ink-950">Nothing saved yet</h1>
+        <p className="mx-auto mt-4 max-w-sm text-[16px] leading-relaxed text-ink-600">
+          Save anything you're undecided about and it will wait here — including
+          things that are currently sold out.
+        </p>
+        <Link to="/" className="btn-primary mt-8">
+          Browse the index
+        </Link>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">My Wishlist</h1>
-        {items.length > 0 && (
-          <p className="text-sm text-gray-500">
-            {items.length} item{items.length !== 1 ? "s" : ""}
-          </p>
-        )}
-      </div>
-
-      {items.length === 0 ? (
-        <div className="text-center py-20">
-          <svg
-            className="w-16 h-16 mx-auto text-gray-200 mb-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-            />
-          </svg>
-          <h3 className="text-lg font-semibold text-gray-700">
-            Your wishlist is empty
-          </h3>
-          <p className="text-gray-500 mt-1 text-sm">
-            Save items you love by clicking the heart icon.
-          </p>
-          <Link
-            to="/"
-            className="mt-5 inline-block px-5 py-2.5 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors"
-          >
-            Browse Products
-          </Link>
+    <div className="shell py-12">
+      <header className="flex items-end justify-between gap-6 border-b border-ink-950/12 pb-6">
+        <div>
+          <p className="meta">Saved</p>
+          <h1 className="display-sm mt-3 text-ink-950">
+            Things you're weighing up
+          </h1>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {items.map((item) => {
-            const image =
-              item.product.images?.[0] ||
-              `https://placehold.co/300x220/e2e8f0/64748b?text=${encodeURIComponent(item.product.name)}`;
-            return (
-              <div
-                key={item.id}
-                className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm flex flex-col"
+        <p className="shrink-0 font-mono text-meta uppercase tabular text-ink-600">
+          {pluralize(items.length, "item")}
+        </p>
+      </header>
+
+      <ul className="divide-y divide-ink-950/12 border-b border-ink-950/12">
+        {items.map(({ id, product, addedAt }) => {
+          const soldOut = product.stock === 0;
+          const busy = busyId === product.id;
+
+          return (
+            <li key={id} className="flex flex-wrap gap-5 py-6 sm:flex-nowrap">
+              <Link
+                to={`/products/${product.id}`}
+                className="well aspect-[4/5] w-28 shrink-0 border border-ink-950/12"
               >
-                <Link
-                  to={`/products/${item.product.id}`}
-                  className="relative block overflow-hidden bg-gray-50 aspect-[4/3]"
-                >
-                  <img
-                    src={image}
-                    alt={item.product.name}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src =
-                        `https://placehold.co/300x220/e2e8f0/64748b?text=P`;
-                    }}
-                  />
-                  {item.product.stock === 0 && (
-                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                      <span className="bg-white text-gray-700 text-xs font-bold px-3 py-1 rounded-full">
-                        Out of Stock
-                      </span>
-                    </div>
-                  )}
-                </Link>
-                <div className="p-4 flex flex-col flex-1 gap-3">
-                  <div>
-                    <p className="text-xs text-primary-600 font-medium uppercase tracking-wide">
-                      {item.product.category}
+                {product.images?.[0] ? (
+                  <img src={product.images[0]} alt={product.name} />
+                ) : (
+                  <span className="grid h-full place-items-center bg-paper-300" />
+                )}
+              </Link>
+
+              <div className="flex min-w-0 flex-1 flex-col">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="meta">
+                      {product.category}
+                      {product.brand && ` · ${product.brand}`}
                     </p>
                     <Link
-                      to={`/products/${item.product.id}`}
-                      className="font-semibold text-gray-900 hover:text-primary-600 transition-colors text-sm line-clamp-2"
+                      to={`/products/${product.id}`}
+                      className="mt-1.5 block text-[16px] font-medium leading-snug tracking-tight text-ink-950 hover:text-vermilion-600"
                     >
-                      {item.product.name}
+                      {product.name}
                     </Link>
+                    <p className="mt-1 font-mono text-meta-xs uppercase text-ink-600">
+                      Saved {formatRelative(addedAt)}
+                    </p>
                   </div>
-                  <p className="text-lg font-bold text-gray-900">
-                    ${item.product.price.toFixed(2)}
-                  </p>
-                  <div className="flex gap-2 mt-auto">
-                    <Button
-                      onClick={() => handleAddToCart(item)}
-                      isLoading={cartLoadingId === item.product.id}
-                      disabled={item.product.stock === 0}
-                      size="sm"
-                      className="flex-1"
-                    >
-                      Add to Cart
-                    </Button>
+
+                  <span className="shrink-0 font-mono text-[15px] tabular text-ink-950">
+                    {formatPrice(product.price)}
+                  </span>
+                </div>
+
+                <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-3 pt-4">
+                  {soldOut ? (
+                    <span className="font-mono text-meta uppercase text-ink-600">
+                      Sold out — we'll restock
+                    </span>
+                  ) : (
                     <button
-                      onClick={() => handleRemove(item.product.id)}
-                      disabled={removingId === item.product.id}
-                      className="p-2 rounded-lg border border-gray-200 text-gray-500 hover:text-red-500 hover:border-red-200 transition-colors disabled:opacity-50"
+                      type="button"
+                      onClick={() => handleMoveToBag(product.id, product.name)}
+                      disabled={busy}
+                      className="btn-outline btn-sm"
                     >
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        />
-                      </svg>
+                      {busy ? "Moving…" : "Move to bag"}
                     </button>
-                  </div>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => handleRemove(product.id, product.name)}
+                    disabled={busy}
+                    className="font-mono text-meta uppercase text-ink-600 underline-offset-4 transition-colors hover:text-vermilion-600 hover:underline disabled:opacity-40"
+                  >
+                    Remove
+                  </button>
                 </div>
               </div>
-            );
-          })}
-        </div>
-      )}
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
