@@ -2,8 +2,13 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
+/* ───────────────────────────────────────────────────────────────────────────
+   Base
+   ─────────────────────────────────────────────────────────────────────────── */
 @layer base {
-  * {
+  *,
+  *::before,
+  *::after {
     box-sizing: border-box;
   }
 
@@ -11,65 +16,212 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     scroll-behavior: smooth;
+    /* Reserve the scrollbar so sticky headers don't shift when a short page
+       is replaced by a long one. */
+    scrollbar-gutter: stable;
   }
 
   body {
-    font-family: "DM Sans", system-ui, sans-serif;
-    background-color: #fdfcfa;
-    color: #1c1611;
+    font-family: "Inter Tight", system-ui, sans-serif;
+    font-feature-settings:
+      "cv05" 1,
+      "ss03" 1;
+    background-color: theme("colors.paper.DEFAULT");
+    color: theme("colors.ink.950");
+    text-rendering: optimizeLegibility;
   }
 
+  /* Fraunces carries the branding. SOFT rounds the terminals slightly and
+     WONK swaps in the single-storey g and splayed leg forms — the details
+     that stop it reading as another default serif. opsz is set per size in
+     the display utilities below. */
   h1,
   h2,
-  h3 {
-    font-family: "Playfair Display", Georgia, serif;
-    letter-spacing: -0.01em;
+  h3,
+  .font-serif {
+    font-family: "Fraunces", Georgia, serif;
+    font-variation-settings:
+      "SOFT" 28,
+      "WONK" 1;
+  }
+
+  /* Prices, counts and quantities must never shuffle width as they change. */
+  .tabular,
+  input[type="number"],
+  .font-mono {
+    font-variant-numeric: tabular-nums;
   }
 
   ::selection {
-    background-color: #f5ddb0;
-    color: #1c1611;
+    background-color: theme("colors.vermilion.500");
+    color: theme("colors.paper.50");
+  }
+
+  /* A single visible focus treatment everywhere, and only for keyboard use. */
+  :focus-visible {
+    outline: 2px solid theme("colors.ink.950");
+    outline-offset: 2px;
+    border-radius: 1px;
+  }
+
+  /* Firefox renders a second, uglier ring on top of :focus-visible. */
+  :focus:not(:focus-visible) {
+    outline: none;
   }
 }
 
+/* ───────────────────────────────────────────────────────────────────────────
+   Components
+   ─────────────────────────────────────────────────────────────────────────── */
 @layer components {
+  /* ── Metadata ────────────────────────────────────────────────────────────
+     Mono, uppercase, widely tracked. Used for categories, SKUs, stock states,
+     section eyebrows and anything numeric that is not body copy. This single
+     treatment does most of the work of making the design look like retail
+     rather than a dashboard. */
+  .meta {
+    @apply font-mono text-meta uppercase text-ink-500;
+  }
+  .meta-strong {
+    @apply font-mono text-meta uppercase text-ink-950;
+  }
+  .meta-accent {
+    @apply font-mono text-meta uppercase text-vermilion-600;
+  }
+
+  /* ── Rules ───────────────────────────────────────────────────────────────
+     Hairlines carry structure in place of shadows. */
+  .rule {
+    @apply border-ink-950/12;
+  }
+  .rule-t {
+    @apply border-t border-ink-950/12;
+  }
+  .rule-b {
+    @apply border-b border-ink-950/12;
+  }
+
+  /* ── Buttons ─────────────────────────────────────────────────────────────
+     Square, bordered, no shadow. The press state moves the label rather than
+     scaling the whole control, which reads as a physical key. */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-6 h-11 rounded-sm
+           font-medium text-sm tracking-tight
+           transition-[background-color,color,border-color,transform] duration-200 ease-out
+           disabled:opacity-40 disabled:pointer-events-none
+           active:translate-y-px;
+  }
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-6 py-3 bg-ink-950 text-white font-medium rounded-full text-sm tracking-wide transition-all duration-200 hover:bg-ink-800 hover:shadow-medium active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed;
+    @apply btn bg-ink-950 text-paper-50 hover:bg-ink-800;
+  }
+  .btn-accent {
+    @apply btn bg-vermilion-600 text-paper-50 hover:bg-vermilion-700;
   }
   .btn-outline {
-    @apply inline-flex items-center justify-center gap-2 px-6 py-3 border border-ink-950 text-ink-950 font-medium rounded-full text-sm tracking-wide transition-all duration-200 hover:bg-ink-950 hover:text-white active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed;
+    @apply btn border border-ink-950/24 text-ink-950 hover:border-ink-950 hover:bg-ink-950 hover:text-paper-50;
   }
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-ink-700 font-medium rounded-full text-sm transition-all duration-200 hover:bg-ink-100 active:scale-95;
+    @apply btn px-3 text-ink-600 hover:text-ink-950 hover:bg-ink-950/5;
   }
-  .btn-brand {
-    @apply inline-flex items-center justify-center gap-2 px-6 py-3 bg-brand-600 text-white font-medium rounded-full text-sm tracking-wide transition-all duration-200 hover:bg-brand-700 hover:shadow-medium active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed;
+  .btn-sm {
+    @apply h-9 px-4 text-[13px];
   }
-
-  .input-field {
-    @apply w-full px-4 py-3 bg-white border border-ink-200 rounded-2xl text-sm text-ink-900 placeholder:text-ink-400 transition-all duration-200 focus:outline-none focus:border-ink-950 focus:ring-2 focus:ring-ink-950/10 disabled:bg-ink-50 disabled:cursor-not-allowed;
-  }
-
-  .card {
-    @apply bg-white rounded-3xl overflow-hidden shadow-card;
-  }
-  .card-hover {
-    @apply transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1;
+  .btn-lg {
+    @apply h-12 px-8;
   }
 
-  .section-title {
-    @apply font-serif text-3xl md:text-4xl font-semibold text-ink-950 leading-tight;
+  /* ── Fields ──────────────────────────────────────────────────────────────
+     Underline-first. A boxed input on a paper ground reads as a form; a ruled
+     one reads as a printed order slip. */
+  .field {
+    @apply w-full h-11 px-3 bg-paper-50 border border-ink-950/16 rounded-sm
+           text-sm text-ink-950 placeholder:text-ink-400
+           transition-colors duration-150
+           focus:outline-none focus:border-ink-950
+           disabled:bg-ink-50 disabled:text-ink-400 disabled:cursor-not-allowed;
   }
-  .section-subtitle {
-    @apply text-ink-500 text-base mt-2;
+  .field-invalid {
+    @apply border-vermilion-600 focus:border-vermilion-600;
+  }
+  .label {
+    @apply block font-mono text-meta uppercase text-ink-600 mb-1.5;
   }
 
-  .tag {
-    @apply inline-block px-3 py-1 rounded-full text-xs font-medium tracking-widest uppercase bg-ink-100 text-ink-600;
+  /* ── Display type ────────────────────────────────────────────────────────
+     opsz is set to match the rendered size so Fraunces thins its hairlines
+     as it grows, instead of scaling one drawing to every size. */
+  .display-xl {
+    @apply font-serif text-display-xl font-semibold;
+    font-variation-settings:
+      "opsz" 144,
+      "SOFT" 20,
+      "WONK" 1;
+  }
+  .display-lg {
+    @apply font-serif text-display-lg font-semibold;
+    font-variation-settings:
+      "opsz" 96,
+      "SOFT" 24,
+      "WONK" 1;
+  }
+  .display {
+    @apply font-serif text-display font-semibold;
+    font-variation-settings:
+      "opsz" 60,
+      "SOFT" 28,
+      "WONK" 1;
+  }
+  .display-sm {
+    @apply font-serif text-display-sm font-semibold;
+    font-variation-settings:
+      "opsz" 36,
+      "SOFT" 32,
+      "WONK" 1;
+  }
+
+  /* ── Catalogue grid ──────────────────────────────────────────────────────
+     Cells are separated by shared hairlines rather than gaps, so the grid
+     reads as one ruled table. The negative margin hides the outer edges. */
+  .catalogue {
+    @apply grid border-l border-t border-ink-950/12;
+  }
+  .catalogue > * {
+    @apply border-r border-b border-ink-950/12;
+  }
+
+  /* ── Image well ──────────────────────────────────────────────────────────
+     Product photography sits on paper, not white, so cut-out shots blend into
+     the page instead of floating on a brighter rectangle. */
+  .well {
+    @apply relative overflow-hidden bg-paper-200;
+  }
+  .well img {
+    @apply w-full h-full object-cover;
+  }
+
+  /* ── Link ────────────────────────────────────────────────────────────────
+     Underline grows from the left on hover rather than appearing at once. */
+  .link {
+    @apply relative inline-block text-ink-950 no-underline;
+  }
+  .link::after {
+    content: "";
+    @apply absolute left-0 -bottom-0.5 h-px w-full bg-current origin-right scale-x-0;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .link:hover::after {
+    @apply origin-left scale-x-100;
   }
 }
 
+/* ───────────────────────────────────────────────────────────────────────────
+   Utilities
+   ─────────────────────────────────────────────────────────────────────────── */
 @layer utilities {
+  .shell {
+    @apply mx-auto w-full max-w-shell px-5 sm:px-8 lg:px-12;
+  }
+
   .line-clamp-1 {
     overflow: hidden;
     display: -webkit-box;
@@ -82,6 +234,13 @@
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
   }
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
@@ -89,48 +248,46 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  .animate-in {
-    animation: fadeUp 0.35s ease-out;
-  }
-  .slide-in-from-right-5 {
-    animation: slideInFromRight 0.25s ease-out;
+
+  /* Stagger helper for grids that animate in. */
+  .stagger > * {
+    animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 }
 
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideInFromRight {
-  from {
-    opacity: 0;
-    transform: translateX(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-/* Custom scrollbar */
+/* Scrollbar — thin, ink, no track. */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 10px;
+  height: 10px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #ccbfad;
+  background: rgba(20, 22, 26, 0.18);
+  border: 3px solid transparent;
+  background-clip: content-box;
   border-radius: 99px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #b4a08a;
+  background: rgba(20, 22, 26, 0.32);
+  background-clip: content-box;
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   Reduced motion
+   Honour the OS setting: keep state changes, drop the movement.
+   ─────────────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

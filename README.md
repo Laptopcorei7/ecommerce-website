@@ -1,250 +1,218 @@
-# 🛒 ShopAPI — Full-Stack E-Commerce Platform
+# Sundry
 
-A full-stack e-commerce web application built with a **React (Vite + TypeScript)** frontend and a **Node.js / Express** backend backed by **MongoDB**. Supports product browsing, cart management, wishlists, order processing, reviews, and a full admin dashboard.
+A full-stack storefront for a general store — homeware, clothing, tools and
+books, forty-three items in total. React on the front, Express and MongoDB
+behind it, with a real cart, real orders, real reviews and an admin area.
+
+Built as a portfolio project. It is not deployed and takes no payments; what it
+is meant to demonstrate is the shape of the thing done carefully.
+
+![The Sundry home page](docs/screenshots/home-hero.jpg)
 
 ---
 
-## Tech Stack
+## Screens
 
-| Layer    | Technology                                        |
-| -------- | ------------------------------------------------- |
-| Frontend | React 18, TypeScript, Vite, React Router v6       |
-| Backend  | Node.js, Express.js                               |
-| Database | MongoDB (Mongoose ODM)                            |
-| Auth     | Session-based auth with role-based access control |
-| State    | React Context API (Auth, Cart, Wishlist, Toast)   |
+|                                                                  |                                                          |
+| ---------------------------------------------------------------- | -------------------------------------------------------- |
+| ![The catalogue index](docs/screenshots/index-grid.jpg)          | ![A product page](docs/screenshots/product-detail.jpg)   |
+| The index — hairline catalogue grid, filters in the query string | Product page — gallery, derived rating, reviews          |
+| ![Order history](docs/screenshots/orders.jpg)                    | ![Admin dashboard](docs/screenshots/admin-dashboard.jpg) |
+| Order history with expandable line items                         | Admin — shop figures and order status transitions        |
+
+---
+
+## The design
+
+The interface is deliberately not the default. Type does the branding: display
+copy is set in **Fraunces** with its optical-size, `SOFT` and `WONK` axes
+turned on, the UI runs on **Inter Tight**, and every piece of metadata —
+category, price, stock, SKU, dates — is **IBM Plex Mono**, uppercase and
+tracked. That last choice does most of the work of making the app read as
+retail rather than as a dashboard.
+
+The palette is printing ink on paper stock: a warm off-white ground
+(`#F7F6F2`), a cool near-black (`#14161A`), and exactly one accent — vermilion
+`#C8401B` — spent only on price, sale state and the primary action. Radii are
+2–4px and there are effectively no drop shadows; separation comes from hairline
+rules and a step in background tone, the way a printed catalogue divides one
+cell from the next.
+
+Product photography was chosen, not scraped. Every image is a real Unsplash
+photograph picked for a neutral ground and soft light so the grid reads as one
+shop, and every URL is verified before it can be seeded:
+
+```bash
+node src/scripts/seed-products.js --verify
+```
+
+---
+
+## Stack
+
+|         |                                                              |
+| ------- | ------------------------------------------------------------ |
+| Client  | React 18, TypeScript, Vite, Tailwind CSS, React Router       |
+| Server  | Node, Express 5, Mongoose 9, MongoDB                         |
+| Auth    | File-backed sessions + httpOnly cookie (not JWT — see below) |
+| Tooling | Prettier, ESLint                                             |
 
 ---
 
 ## Features
 
-### Customer
+**Storefront** — catalogue with search, category filter, four sort orders and
+pagination, all held in the query string so a filtered view survives a reload
+and the back button. Product pages with a three-crop gallery, stock states, and
+reviews. Saved items. A cart that persists against the account.
 
-- Browse and filter products by category, price range, and search term
-- View detailed product pages with reviews and ratings
-- Add products to cart or wishlist
-- Move wishlist items directly to cart
-- Checkout and place orders
-- View and cancel orders
-- Manage profile and change password
-- Leave reviews on products
+**Checkout** — address capture, a running total computed from the same pricing
+rule the server charges, and orders that decrement stock atomically.
 
-### Admin
+**Reviews** — one per customer per product, enforced by a unique compound
+index. Ratings shown on the storefront are always recomputed from the review
+documents that exist; nothing displays a rating with nothing behind it.
 
-- Separate admin login with employee ID verification
-- Dashboard with overview stats (orders, revenue, users, products)
-- Order management — view all orders and update statuses
-- Product management — create, update, and delete products
-- Sales analytics and revenue by month
-- User statistics and top customer reports
-- Inventory alerts for low/out-of-stock products
+**Admin** — a separate sign-in requiring an employee ID, a dashboard of shop
+figures, order status transitions, and full catalogue CRUD.
 
 ---
 
-## Project Structure
+## How it is put together
 
 ```
-├── client/                   # React frontend (Vite + TypeScript)
-│   ├── src/
-│   │   ├── pages/            # Route-level pages (Home, Cart, Orders, Admin, etc.)
-│   │   ├── components/       # Shared UI components
-│   │   ├── contexts/         # React Context providers (Auth, Cart, Wishlist, Toast)
-│   │   ├── api/              # Typed API client (index.ts)
-│   │   └── types/            # TypeScript type definitions
-│   └── index.html
-│
-└── server/                   # Express backend
-    ├── controllers/          # Route handler functions
-    ├── models/               # Mongoose models
-    ├── routes/               # Express routers
-    ├── middleware/            # Auth & admin middleware
-    └── utils/                # Utility functions (currency formatting, etc.)
+client/src
+  api/          typed fetch client, one module
+  components/   common/ (primitives) · layout/ · product/
+  contexts/     Auth · Cart · Wishlist · Toast
+  lib/          format · pricing · editorial
+  pages/        one file per route, admin/ nested
+server/src
+  controllers/  http* handlers, one file per resource
+  data/         the curated catalogue and review copy
+  lib/          pricing · api-error
+  middleware/   auth · admin · rate-limit · error
+  models/       mongoose schemas
+  routes/       routers, mounted at the root in app.js
+  scripts/      create-admin · seed-products
 ```
+
+### Decisions worth pointing at
+
+**One pricing rule, mirrored rather than duplicated.**
+`server/src/lib/pricing.js` is authoritative and `client/src/lib/pricing.ts`
+mirrors it, so the storefront can show a running total without a round trip
+while the server remains the thing that decides what is charged. Money is
+rounded to whole cents at every step — summing unrounded floats produces totals
+that don't match the lines shown to the customer.
+
+**Stock changes are atomic and transactional.** Orders decrement stock with a
+single `bulkWrite` filtered on `stock: { $gte: quantity }`, so availability is
+re-checked at write time rather than trusting an earlier read; a short
+`modifiedCount` aborts the whole order with a 409. Cancellations restock via
+`$inc` inside a transaction, so two concurrent cancels conflict instead of
+double-restocking. (This needs a replica set — Atlas provides one.)
+
+**Auth is server-side sessions, not JWT.** Sessions live in a file keyed by an
+httpOnly cookie. Writes are coalesced and land via a temp-file rename so a
+crash cannot truncate the store; the boot-time read is synchronous on purpose,
+because an async one would serve the first requests against an empty map and
+log everyone out. It is a deliberate choice: revocation is genuinely useful
+here, and a stateless token would trade a correct design for a familiar one.
+
+**Auth middleware is scoped per route.** A path-less `router.use(requireAuth)`
+on a router mounted at the root applies to every request that reaches it —
+including routes registered in later routers. Three routers did this, which is
+why public review listings were returning 401.
+
+**Ratings are derived, never authored.** The seeder inserts real `Review`
+documents and recomputes `averageRating` and `totalReviews` from them. Review
+counts, dates and scores are jittered, because uniform values read as
+generated.
 
 ---
 
-## Getting Started
+## Running it
 
-### Prerequisites
-
-- Node.js v18+
-- MongoDB (local or Atlas)
-
-### 1. Clone the repository
+**Requires** Node 18+ and a MongoDB connection string. Transactions need a
+replica set, so a MongoDB Atlas cluster is the easiest route; a standalone
+`mongod` will serve the catalogue but fail on checkout.
 
 ```bash
-git clone https://github.com/Laptopcorei7/ecommerce-website.git
-cd your-repo
+git clone <your-remote> sundry && cd sundry
+npm install --prefix server
+npm install --prefix client
 ```
 
-### 2. Set up the backend
+Create `server/.env`:
+
+```ini
+MONGO_URI=mongodb+srv://user:pass@cluster.mongodb.net/sundry
+PORT=8000
+
+# Optional — used by create-admin.js, which falls back to dev defaults
+ADMIN_EMAIL=admin@sundry.test
+ADMIN_PASSWORD=your-password
+ADMIN_EMPLOYEE_ID=SUN-0001
+```
+
+Seed the database. The admin has to exist first, because products carry a
+`createdBy` reference:
 
 ```bash
 cd server
-npm install
+node src/scripts/create-admin.js
+node src/scripts/seed-products.js --verify
 ```
 
-Create a `.env` file in the `server/` directory:
-
-```env
-PORT=8000
-MONGO_URI=mongodb+srv://buabeng:<db_password>@ecommerce-api.mpwtcdk.mongodb.net/
-SESSION_SECRET=your_session_secret_here
-NODE_ENV=development
-```
-
-Start the server:
+Run both halves in separate terminals:
 
 ```bash
-npm run dev
+cd server && npm run watch     # http://localhost:8000
+cd client && npm run dev       # http://localhost:3000
 ```
 
-### 3. Set up the frontend
+### Signing in
+
+Seeding creates twelve demo customers with order and review history. Any of
+them works; the first is:
+
+```
+adwoa.mensah@example.com / Sundry!Demo7
+```
+
+Administration is at `/admin/login` and needs the employee ID as well as the
+email and password you set in `.env`.
+
+---
+
+## Checks
 
 ```bash
-cd client
-npm install
-npm run dev
+npm run format          # Prettier, repo-wide
+npm run format:check
+cd client && npx tsc --noEmit   # currently clean
 ```
 
-The frontend runs on `http://localhost:3000` and proxies API requests to `http://localhost:8000`.
+---
+
+## What this deliberately does not do
+
+Being straight about the edges, since they are choices rather than oversights:
+
+- **No payment provider.** Checkout captures an address and writes an order.
+  The payment method selector is presentational and the UI says so.
+- **No mail transport.** Password-reset and verification links are written to
+  the server console. Email changes are disabled in the profile screen rather
+  than pretending to verify a new address.
+- **Sessions are file-backed**, which is fine for one process and wrong for
+  several. Moving to a shared store is a deliberate non-goal here.
+- **Not deployed, and not hardened for deployment.** No CI, no container, no
+  rate limiting beyond the auth routes.
 
 ---
 
-## API Reference
+## Credits
 
-All endpoints are prefixed with `http://localhost:8000`. Authentication uses session cookies — login first, then all subsequent requests are authenticated automatically.
-
-### Auth
-
-| Method | Endpoint       | Auth | Description                         |
-| ------ | -------------- | ---- | ----------------------------------- |
-| POST   | `/register`    | —    | Register a new user                 |
-| POST   | `/login`       | —    | User login                          |
-| POST   | `/admin/login` | —    | Admin login (requires `employeeId`) |
-| POST   | `/logout`      | ✓    | Log out                             |
-| GET    | `/me`          | ✓    | Get current user                    |
-
-### Products
-
-| Method | Endpoint        | Auth  | Description                          |
-| ------ | --------------- | ----- | ------------------------------------ |
-| GET    | `/products`     | —     | List all products (supports filters) |
-| GET    | `/products/:id` | —     | Get single product                   |
-| POST   | `/products`     | Admin | Create product                       |
-| PUT    | `/products/:id` | Admin | Update product                       |
-| DELETE | `/products/:id` | Admin | Delete product                       |
-
-**Query Parameters for `GET /products`:**
-
-| Param      | Type   | Description                                                                     |
-| ---------- | ------ | ------------------------------------------------------------------------------- |
-| `search`   | string | Name search (case-insensitive)                                                  |
-| `category` | string | One of: `Electronics`, `Clothing`, `Books`, `Home`, `Sports`, `Other`           |
-| `minPrice` | number | Minimum price filter                                                            |
-| `maxPrice` | number | Maximum price filter                                                            |
-| `sort`     | string | One of: `price`, `-price`, `-name`, `createdAt`, `-createdAt`, `-averageRating` |
-| `page`     | number | Page number (default: 1)                                                        |
-| `limit`    | number | Results per page, max 100 (default: 10)                                         |
-
-### Cart
-
-| Method | Endpoint    | Auth | Description               |
-| ------ | ----------- | ---- | ------------------------- |
-| GET    | `/cart`     | ✓    | Get user's cart           |
-| POST   | `/cart`     | ✓    | Add item to cart          |
-| PUT    | `/cart/:id` | ✓    | Update cart item quantity |
-| DELETE | `/cart/:id` | ✓    | Remove specific cart item |
-| DELETE | `/cart`     | ✓    | Clear entire cart         |
-
-### Orders
-
-| Method | Endpoint             | Auth  | Description               |
-| ------ | -------------------- | ----- | ------------------------- |
-| POST   | `/orders`            | ✓     | Create order from cart    |
-| GET    | `/orders`            | ✓     | Get current user's orders |
-| GET    | `/order/:id`         | ✓     | Get a specific order      |
-| PUT    | `/orders/:id/cancel` | ✓     | Cancel an order           |
-| GET    | `/order/all/admin`   | Admin | Get all orders            |
-| PUT    | `/orders/:id/status` | Admin | Update order status       |
-
-**Order statuses:** `pending` → `paid` → `processing` → `shipped` → `delivered` / `cancelled`
-
-> Orders can only be cancelled by the user while in `pending` or `paid` status. Cancelling an order automatically restores product stock.
-
-### Wishlist
-
-| Method | Endpoint                    | Auth | Description             |
-| ------ | --------------------------- | ---- | ----------------------- |
-| GET    | `/wishlist`                 | ✓    | Get wishlist            |
-| POST   | `/wishlist`                 | ✓    | Add product to wishlist |
-| DELETE | `/wishlist/:productId`      | ✓    | Remove from wishlist    |
-| DELETE | `/wishlist`                 | ✓    | Clear wishlist          |
-| POST   | `/wishlist/:productId/cart` | ✓    | Move item to cart       |
-
-### Reviews
-
-| Method | Endpoint                       | Auth | Description                |
-| ------ | ------------------------------ | ---- | -------------------------- |
-| GET    | `/products/:productId/reviews` | —    | Get reviews for a product  |
-| GET    | `/reviews/:reviewId`           | —    | Get a single review        |
-| POST   | `/products/:productId/reviews` | ✓    | Submit a review            |
-| PUT    | `/reviews/:reviewId`           | ✓    | Update a review            |
-| DELETE | `/reviews/:reviewId`           | ✓    | Delete a review            |
-| GET    | `/users/me/reviews`            | ✓    | Get current user's reviews |
-
-### Profile
-
-| Method | Endpoint            | Auth | Description     |
-| ------ | ------------------- | ---- | --------------- |
-| PUT    | `/profile`          | ✓    | Update name     |
-| PUT    | `/profile/password` | ✓    | Change password |
-
-### Admin Dashboard
-
-| Method | Endpoint                    | Auth  | Description                      |
-| ------ | --------------------------- | ----- | -------------------------------- |
-| GET    | `/admin/dashboard/overview` | Admin | Summary stats                    |
-| GET    | `/admin/dashboard/orders`   | Admin | Order stats by status            |
-| GET    | `/admin/dashboard/products` | Admin | Inventory and category stats     |
-| GET    | `/admin/dashboard/sales`    | Admin | Top products and monthly revenue |
-| GET    | `/admin/dashboard/users`    | Admin | User stats and top customers     |
-| GET    | `/admin/dashboard/recent`   | Admin | Recent orders, reviews, signups  |
-
----
-
-## Frontend Routes
-
-| Route             | Access         | Description            |
-| ----------------- | -------------- | ---------------------- |
-| `/`               | Public         | Home / product listing |
-| `/products/:id`   | Public         | Product detail page    |
-| `/login`          | Public         | User login             |
-| `/register`       | Public         | User registration      |
-| `/admin/login`    | Public         | Admin login            |
-| `/cart`           | Auth required  | Shopping cart          |
-| `/checkout`       | Auth required  | Checkout flow          |
-| `/orders`         | Auth required  | Order history          |
-| `/wishlist`       | Auth required  | Wishlist               |
-| `/profile`        | Auth required  | User profile           |
-| `/admin`          | Admin required | Admin dashboard        |
-| `/admin/products` | Admin required | Product management     |
-
----
-
-## Environment Variables
-
-| Variable         | Description                                 |
-| ---------------- | ------------------------------------------- |
-| `PORT`           | Port for the Express server (default: 8000) |
-| `MONGO_URI`      | MongoDB connection string                   |
-| `SESSION_SECRET` | Secret key for session signing              |
-| `NODE_ENV`       | `development` or `production`               |
-
-> See `.env.example` for a template.
-
----
-
-## License
-
-MIT
+Photography from [Unsplash](https://unsplash.com). Typefaces: Fraunces by
+Undercase Type, Inter Tight by Rasmus Andersson, IBM Plex Mono by IBM.

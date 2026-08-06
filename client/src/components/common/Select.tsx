@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useId } from "react";
 
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
@@ -18,42 +18,56 @@ export default function Select({
   id,
   ...props
 }: SelectProps) {
-  const selectId = id || label?.toLowerCase().replace(/\s+/g, "-");
+  const generatedId = useId();
+  const selectId = id ?? generatedId;
+  const errorId = `${selectId}-error`;
 
   return (
     <div className={fullWidth ? "w-full" : ""}>
       {label && (
-        <label
-          htmlFor={selectId}
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
+        <label htmlFor={selectId} className="label">
           {label}
         </label>
       )}
-      <select
-        id={selectId}
-        {...props}
-        className={`
-          block rounded-lg border px-3 py-2 text-sm shadow-sm bg-white
-          transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-0
-          disabled:bg-gray-50 disabled:cursor-not-allowed
-          ${
-            error
-              ? "border-red-400 focus:border-red-400 focus:ring-red-300"
-              : "border-gray-300 focus:border-primary-500 focus:ring-primary-200"
-          }
-          ${fullWidth ? "w-full" : ""}
-          ${className}
-        `}
-      >
-        {placeholder && <option value="">{placeholder}</option>}
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+
+      <div className="relative">
+        <select
+          id={selectId}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? errorId : undefined}
+          {...props}
+          className={`
+            field cursor-pointer appearance-none pr-9
+            ${error ? "field-invalid" : ""}
+            ${className}
+          `}
+        >
+          {placeholder && <option value="">{placeholder}</option>}
+          {options.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+
+        {/* The native arrow differs per platform; this one matches the rules. */}
+        <svg
+          aria-hidden
+          viewBox="0 0 24 24"
+          className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-500"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.5}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" />
+        </svg>
+      </div>
+
+      {error && (
+        <p id={errorId} className="mt-1.5 text-xs text-vermilion-700">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

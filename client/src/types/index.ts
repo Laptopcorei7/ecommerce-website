@@ -60,16 +60,41 @@ export interface ProductFilters {
 
 export interface Review {
   id: string;
-  userId: string;
+  userId?: string;
   user: { name: string; avatar?: string };
-  productId: string;
+  productId?: string;
   rating: number;
+  title: string;
   comment: string;
+  isVerifiedPurchase?: boolean;
   createdAt: string;
+  updatedAt?: string;
+}
+
+/**
+ * GET /products/:id/reviews returns this envelope, not a bare array. The
+ * client previously typed it as `Review[]`, so every product page silently
+ * rendered zero reviews.
+ */
+export interface ProductReviewsResponse {
+  productId: string;
+  averageRating: number;
+  totalReviews: number;
+  reviews: Review[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalReviews: number;
+    reviewsPerPage: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
 }
 
 export interface CreateReviewPayload {
   rating: number;
+  /** Required by the API — a review without one is rejected with a 400. */
+  title: string;
   comment: string;
 }
 

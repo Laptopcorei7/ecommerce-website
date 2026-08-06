@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { productsApi } from "@/api";
 import type { Product } from "@/types";
 import { useToast } from "@/contexts/ToastContext";
@@ -6,491 +7,516 @@ import Loading from "@/components/common/Loading";
 import Button from "@/components/common/Button";
 import Input from "@/components/common/Input";
 import Modal from "@/components/common/Modal";
+import { formatPrice } from "@/lib/format";
 
+/** Mirrors the enum on the Product schema. */
+const CATEGORIES = [
+  "Electronics",
+  "Clothing",
+  "Books",
+  "Home",
+  "Sports",
+  "Other",
+] as const;
+
+type Category = (typeof CATEGORIES)[number];
+
+/**
+ * The form holds strings because inputs produce strings; it is converted to
+ * the API shape once, in buildPayload. The previous version carried
+ * `comparePrice` and `tags` fields that don't exist on the Product schema, so
+ * they were silently dropped on save.
+ */
 interface ProductFormData {
   name: string;
   description: string;
   price: string;
-  comparePrice: string;
-  category: string;
+  category: Category | "";
   stock: string;
+  brand: string;
   images: string;
-  tags: string;
 }
 
 const emptyForm: ProductFormData = {
   name: "",
   description: "",
   price: "",
-  comparePrice: "",
   category: "",
   stock: "",
+  brand: "",
   images: "",
-  tags: "",
 };
+
+const LOW_STOCK_THRESHOLD = 5;
 
 export default function AdminProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState<ProductFormData>(emptyForm);
-  const [formErrors, setFormErrors] = useState<Partial<ProductFormData>>({});
+  const [formErrors, setFormErrors] = useState<
+    Partial<Record<keyof ProductFormData, string>>
+  >({});
   const [isSaving, setIsSaving] = useState(false);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  const [confirmDelete, setConfirmDelete] = useState<Product | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const { success, error } = useToast();
 
-  const fetchProducts = async (q?: string) => {
-    setIsLoading(true);
-    try {
-      const res = await productsApi.list({ search: q, limit: 100 });
-      setProducts(res.products ?? []);
-    } catch {
-      setProducts([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const fetchProducts = useCallback(
+    async (q?: string) => {
+      setIsLoading(true);
+      try {
+        // getAll, not list — `productsApi.list` never existed, so this page threw
+        // on mount before it rendered anything.
+        const res = await productsApi.getAll({
+          search: q || undefined,
+          limit: 100,
+        });
+        setProducts(res.products ?? []);
+      } catch (err) {
+        console.error("Failed to load products", err);
+        setProducts([]);
+        error("Could not load the catalogue.");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [error],
+  );
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [fetchProducts]);
 
-  const openCreate = () => {
+  function openCreate() {
     setEditingProduct(null);
     setFormData(emptyForm);
     setFormErrors({});
     setIsModalOpen(true);
-  };
+  }
 
-  const openEdit = (product: Product) => {
+  function openEdit(product: Product) {
     setEditingProduct(product);
     setFormData({
       name: product.name,
-      description: product.description,
+      description: product.description ?? "",
       price: String(product.price),
-      comparePrice: String(product.comparePrice ?? ""),
       category: product.category,
       stock: String(product.stock),
-      images: product.images?.join(", ") ?? product.image ?? "",
-      tags: product.tags?.join(", ") ?? "",
+      brand: product.brand ?? "",
+      images: (product.images ?? []).join("\n"),
     });
     setFormErrors({});
     setIsModalOpen(true);
-  };
+  }
 
-  const validate = (): boolean => {
-    const errs: Partial<ProductFormData> = {};
-    if (!formData.name.trim()) errs.name = "Product name is required";
-    if (!formData.description.trim())
-      errs.description = "Description is required";
-    if (
-      !formData.price ||
-      isNaN(Number(formData.price)) ||
-      Number(formData.price) <= 0
-    )
-      errs.price = "Valid price is required";
-    if (!formData.category.trim()) errs.category = "Category is required";
-    if (
-      !formData.stock ||
-      isNaN(Number(formData.stock)) ||
-      Number(formData.stock) < 0
-    )
-      errs.stock = "Valid stock quantity is required";
+  function validate(): boolean {
+    const errs: Partial<Record<keyof ProductFormData, string>> = {};
+
+    if (!formData.name.trim()) errs.name = "A name is required.";
+    else if (formData.name.trim().length < 3)
+      errs.name = "At least 3 characters.";
+
+    const price = Number(formData.price);
+    if (!formData.price.trim()) errs.price = "A price is required.";
+    else if (!Number.isFinite(price) || price < 0)
+      errs.price = "Enter a positive number.";
+
+    const stock = Number(formData.stock);
+    if (!formData.stock.trim()) errs.stock = "A stock count is required.";
+    else if (!Number.isInteger(stock) || stock < 0)
+      errs.stock = "Enter a whole number, zero or more.";
+
+    if (!formData.category) errs.category = "Pick a category.";
+
     setFormErrors(errs);
     return Object.keys(errs).length === 0;
-  };
+  }
 
-  const handleSave = async (e: React.FormEvent) => {
+  function buildPayload(): Partial<Product> {
+    return {
+      name: formData.name.trim(),
+      description: formData.description.trim(),
+      price: Number(formData.price),
+      category: formData.category as Category,
+      stock: Number(formData.stock),
+      brand: formData.brand.trim(),
+      images: formData.images
+        .split(/[\n,]/)
+        .map((url) => url.trim())
+        .filter(Boolean),
+    };
+  }
+
+  async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     if (!validate()) return;
+
     setIsSaving(true);
     try {
-      const payload = {
-        name: formData.name.trim(),
-        description: formData.description.trim(),
-        price: Number(formData.price),
-        comparePrice: formData.comparePrice
-          ? Number(formData.comparePrice)
-          : undefined,
-        category: formData.category.trim(),
-        stock: Number(formData.stock),
-        images: formData.images
-          ? formData.images
-              .split(",")
-              .map((s) => s.trim())
-              .filter(Boolean)
-          : [],
-        tags: formData.tags
-          ? formData.tags
-              .split(",")
-              .map((s) => s.trim())
-              .filter(Boolean)
-          : [],
-      };
-
       if (editingProduct) {
-        const updated = await productsApi.update(editingProduct.id, payload);
-        setProducts((prev) =>
-          prev.map((p) => (p.id === editingProduct.id ? updated : p)),
-        );
-        success("Product updated successfully");
+        await productsApi.update(editingProduct._id, buildPayload());
+        success(`${formData.name.trim()} updated.`);
       } else {
-        const created = await productsApi.create(payload);
-        setProducts((prev) => [created, ...prev]);
-        success("Product created successfully");
+        await productsApi.create(buildPayload());
+        success(`${formData.name.trim()} added to the catalogue.`);
       }
       setIsModalOpen(false);
+      await fetchProducts(search);
     } catch (err) {
-      error((err as Error).message || "Failed to save product");
+      error((err as Error).message || "Could not save that product.");
     } finally {
       setIsSaving(false);
     }
-  };
+  }
 
-  const handleDelete = async (id: string) => {
-    setDeletingId(id);
+  async function handleDelete() {
+    if (!confirmDelete) return;
+
+    setIsDeleting(true);
     try {
-      await productsApi.delete(id);
-      setProducts((prev) => prev.filter((p) => p.id !== id));
-      success("Product deleted");
-      setConfirmDeleteId(null);
+      await productsApi.delete(confirmDelete._id);
+      setProducts((prev) => prev.filter((p) => p._id !== confirmDelete._id));
+      success(`${confirmDelete.name} removed.`);
+      setConfirmDelete(null);
     } catch (err) {
-      error((err as Error).message || "Failed to delete product");
+      error((err as Error).message || "Could not remove that product.");
     } finally {
-      setDeletingId(null);
+      setIsDeleting(false);
     }
-  };
+  }
 
-  const filtered = products.filter(
-    (p) =>
-      !search ||
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.category.toLowerCase().includes(search.toLowerCase()),
-  );
-
-  const field = (key: keyof ProductFormData) => ({
-    value: formData[key],
-    onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-      setFormData((f) => ({ ...f, [key]: e.target.value })),
-    error: formErrors[key],
-  });
+  const field =
+    (key: keyof ProductFormData) =>
+    (
+      e: React.ChangeEvent<
+        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+      >,
+    ) => {
+      const { value } = e.target;
+      setFormData((f) => ({ ...f, [key]: value }));
+      setFormErrors((prev) =>
+        prev[key] ? { ...prev, [key]: undefined } : prev,
+      );
+    };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+    <div className="shell py-12">
+      <header className="flex flex-wrap items-end justify-between gap-6 border-b border-ink-950/12 pb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Product Management
-          </h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            {products.length} products in store
-          </p>
+          <p className="meta-accent">Administration</p>
+          <h1 className="display-sm mt-3 text-ink-950">Catalogue</h1>
         </div>
-        <Button
-          onClick={openCreate}
-          leftIcon={
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-              />
-            </svg>
-          }
-        >
-          Add Product
-        </Button>
-      </div>
+        <div className="flex items-center gap-4">
+          <Link to="/admin" className="btn-ghost btn-sm">
+            Overview
+          </Link>
+          <Button onClick={openCreate} size="sm">
+            Add product
+          </Button>
+        </div>
+      </header>
 
       {/* Search */}
-      <div className="mb-5 max-w-sm">
-        <Input
-          placeholder="Search by name or category…"
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          fetchProducts(search);
+        }}
+        className="flex items-center gap-3 border-b border-ink-950/12 py-3"
+        role="search"
+      >
+        <label htmlFor="admin-search" className="sr-only">
+          Search the catalogue
+        </label>
+        <input
+          id="admin-search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          leftIcon={
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-          }
+          placeholder="Search by name"
+          className="h-9 flex-1 border-0 border-b border-transparent bg-transparent px-0 font-mono text-meta uppercase text-ink-950 placeholder:text-ink-400 focus:border-ink-950 focus:outline-none focus:ring-0"
         />
-      </div>
+        {search && (
+          <button
+            type="button"
+            onClick={() => {
+              setSearch("");
+              fetchProducts();
+            }}
+            className="font-mono text-meta uppercase text-ink-400 hover:text-vermilion-600"
+          >
+            Clear
+          </button>
+        )}
+      </form>
 
-      {/* Table */}
       {isLoading ? (
-        <Loading message="Loading products…" />
+        <Loading message="Loading catalogue" />
+      ) : products.length === 0 ? (
+        <p className="mt-10 border border-ink-950/12 px-6 py-16 text-center text-[14px] text-ink-500">
+          {search ? "Nothing matches that search." : "The catalogue is empty."}
+        </p>
       ) : (
-        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  {["Product", "Category", "Price", "Stock", "Actions"].map(
-                    (h) => (
-                      <th
-                        key={h}
-                        className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
+        <div className="mt-8 overflow-x-auto">
+          <table className="w-full min-w-[46rem] border-collapse">
+            <thead>
+              <tr className="border-y border-ink-950/12 text-left">
+                {[
+                  "",
+                  "Product",
+                  "Category",
+                  "Price",
+                  "Stock",
+                  "Rating",
+                  "",
+                ].map((heading, i) => (
+                  <th
+                    key={i}
+                    scope="col"
+                    className="py-3 pr-6 font-mono text-meta font-normal uppercase text-ink-500"
+                  >
+                    {heading}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-ink-950/12">
+              {products.map((product) => {
+                const soldOut = product.stock === 0;
+                const low = !soldOut && product.stock <= LOW_STOCK_THRESHOLD;
+
+                return (
+                  <tr key={product._id}>
+                    <td className="py-3 pr-4">
+                      <div className="well h-14 w-12 border border-ink-950/12">
+                        {product.images?.[0] && (
+                          <img src={product.images[0]} alt="" loading="lazy" />
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-3 pr-6">
+                      <Link
+                        to={`/products/${product._id}`}
+                        className="text-[14px] font-medium tracking-tight text-ink-950 hover:text-vermilion-600"
                       >
-                        {h}
-                      </th>
-                    ),
-                  )}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {filtered.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={5}
-                      className="px-4 py-10 text-center text-gray-400"
-                    >
-                      {search
-                        ? "No products match your search"
-                        : "No products yet"}
+                        {product.name}
+                      </Link>
+                      {product.brand && (
+                        <p className="mt-0.5 text-[12px] text-ink-500">
+                          {product.brand}
+                        </p>
+                      )}
+                    </td>
+                    <td className="py-3 pr-6 font-mono text-meta uppercase text-ink-600">
+                      {product.category}
+                    </td>
+                    <td className="py-3 pr-6 font-mono text-[13px] tabular text-ink-950">
+                      {formatPrice(product.price)}
+                    </td>
+                    <td className="py-3 pr-6">
+                      <span
+                        className={`font-mono text-[13px] tabular ${
+                          soldOut
+                            ? "text-ink-300"
+                            : low
+                              ? "text-vermilion-600"
+                              : "text-ink-950"
+                        }`}
+                      >
+                        {soldOut ? "Sold out" : product.stock}
+                      </span>
+                    </td>
+                    <td className="py-3 pr-6 font-mono text-[13px] tabular text-ink-600">
+                      {product.averageRating > 0
+                        ? `${product.averageRating.toFixed(1)} · ${product.totalReviews}`
+                        : "—"}
+                    </td>
+                    <td className="py-3">
+                      <div className="flex items-center gap-4">
+                        <button
+                          type="button"
+                          onClick={() => openEdit(product)}
+                          className="font-mono text-meta uppercase text-ink-500 underline-offset-4 transition-colors hover:text-ink-950 hover:underline"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setConfirmDelete(product)}
+                          className="font-mono text-meta uppercase text-ink-400 underline-offset-4 transition-colors hover:text-vermilion-600 hover:underline"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
-                ) : (
-                  filtered.map((product) => (
-                    <tr
-                      key={product.id}
-                      className="hover:bg-gray-50 transition-colors"
-                    >
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={
-                              product.images?.[0] ||
-                              product.image ||
-                              `https://placehold.co/40x40/e2e8f0/64748b?text=P`
-                            }
-                            alt={product.name}
-                            className="w-10 h-10 object-cover rounded-lg bg-gray-100 shrink-0"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src =
-                                "https://placehold.co/40x40/e2e8f0/64748b?text=P";
-                            }}
-                          />
-                          <div>
-                            <p className="font-medium text-gray-900 line-clamp-1">
-                              {product.name}
-                            </p>
-                            <p className="text-xs text-gray-400 line-clamp-1">
-                              {product.description}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="px-2.5 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full font-medium">
-                          {product.category}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <p className="font-semibold text-gray-900">
-                          ${product.price.toFixed(2)}
-                        </p>
-                        {product.comparePrice &&
-                          product.comparePrice > product.price && (
-                            <p className="text-xs text-gray-400 line-through">
-                              ${product.comparePrice.toFixed(2)}
-                            </p>
-                          )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`font-medium ${product.stock === 0 ? "text-red-600" : product.stock < 10 ? "text-yellow-600" : "text-green-600"}`}
-                        >
-                          {product.stock}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => openEdit(product)}
-                            className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors"
-                          >
-                            <svg
-                              className="w-4 h-4"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                              />
-                            </svg>
-                          </button>
-                          <button
-                            onClick={() => setConfirmDeleteId(product.id)}
-                            className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
-                          >
-                            <svg
-                              className="w-4 h-4"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
 
-      {/* Create/Edit Modal */}
+      {/* ── Create / edit ─────────────────────────────────────────────────── */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingProduct ? "Edit Product" : "Add New Product"}
-        size="lg"
+        title={editingProduct ? "Edit product" : "Add product"}
+        size="xl"
       >
-        <form onSubmit={handleSave} className="space-y-4">
-          <Input
-            label="Product Name"
-            placeholder="e.g. Wireless Headphones"
-            required
-            {...field("name")}
-          />
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) =>
-                setFormData((f) => ({ ...f, description: e.target.value }))
-              }
-              rows={3}
-              placeholder="Describe your product…"
-              className={`w-full px-3 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 resize-none ${
-                formErrors.description ? "border-red-400" : "border-gray-300"
-              }`}
+        <form onSubmit={handleSave} noValidate>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <Input
+                label="Name"
+                value={formData.name}
+                onChange={field("name")}
+                error={formErrors.name}
+                required
+              />
+            </div>
+
+            <Input
+              label="Brand"
+              value={formData.brand}
+              onChange={field("brand")}
+              placeholder="Optional"
             />
-            {formErrors.description && (
-              <p className="mt-1 text-xs text-red-600">
-                {formErrors.description}
+
+            <div>
+              <label htmlFor="product-category" className="label">
+                Category
+                <span className="ml-1 text-vermilion-600" aria-hidden>
+                  *
+                </span>
+              </label>
+              <select
+                id="product-category"
+                value={formData.category}
+                onChange={field("category")}
+                className={`field cursor-pointer ${formErrors.category ? "field-invalid" : ""}`}
+                required
+              >
+                <option value="">Choose one</option>
+                {CATEGORIES.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+              {formErrors.category && (
+                <p className="mt-1.5 text-xs text-vermilion-700">
+                  {formErrors.category}
+                </p>
+              )}
+            </div>
+
+            <Input
+              label="Price"
+              type="number"
+              step="0.01"
+              min="0"
+              value={formData.price}
+              onChange={field("price")}
+              error={formErrors.price}
+              required
+            />
+
+            <Input
+              label="Stock"
+              type="number"
+              step="1"
+              min="0"
+              value={formData.stock}
+              onChange={field("stock")}
+              error={formErrors.stock}
+              required
+            />
+
+            <div className="sm:col-span-2">
+              <label htmlFor="product-description" className="label">
+                Description
+              </label>
+              <textarea
+                id="product-description"
+                value={formData.description}
+                onChange={field("description")}
+                rows={4}
+                maxLength={1000}
+                className="field h-auto resize-none py-2.5"
+              />
+            </div>
+
+            <div className="sm:col-span-2">
+              <label htmlFor="product-images" className="label">
+                Image URLs
+              </label>
+              <textarea
+                id="product-images"
+                value={formData.images}
+                onChange={field("images")}
+                rows={3}
+                placeholder="One per line"
+                className="field h-auto resize-none py-2.5 font-mono text-[12px]"
+              />
+              <p className="mt-1.5 text-xs text-ink-500">
+                One per line, or comma separated. The first is used as the
+                thumbnail.
               </p>
-            )}
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="Price ($)"
-              type="number"
-              placeholder="29.99"
-              min="0"
-              step="0.01"
-              required
-              {...field("price")}
-            />
-            <Input
-              label="Compare Price ($)"
-              type="number"
-              placeholder="39.99"
-              min="0"
-              step="0.01"
-              {...field("comparePrice")}
-              hint="Original price for discount display"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="Category"
-              placeholder="Electronics"
-              required
-              {...field("category")}
-            />
-            <Input
-              label="Stock Quantity"
-              type="number"
-              placeholder="100"
-              min="0"
-              required
-              {...field("stock")}
-            />
-          </div>
-          <Input
-            label="Image URLs"
-            placeholder="https://example.com/img1.jpg, https://example.com/img2.jpg"
-            hint="Comma-separated URLs"
-            {...field("images")}
-          />
-          <Input
-            label="Tags"
-            placeholder="wireless, audio, premium"
-            hint="Comma-separated tags"
-            {...field("tags")}
-          />
-          <div className="flex justify-end gap-3 pt-2">
+
+          <div className="mt-6 flex justify-end gap-3 border-t border-ink-950/12 pt-5">
             <Button
-              variant="outline"
               type="button"
+              variant="ghost"
               onClick={() => setIsModalOpen(false)}
             >
               Cancel
             </Button>
             <Button type="submit" isLoading={isSaving}>
-              {editingProduct ? "Save Changes" : "Create Product"}
+              {editingProduct ? "Save changes" : "Add product"}
             </Button>
           </div>
         </form>
       </Modal>
 
-      {/* Delete Confirm Modal */}
+      {/* ── Delete confirmation ───────────────────────────────────────────── */}
       <Modal
-        isOpen={!!confirmDeleteId}
-        onClose={() => setConfirmDeleteId(null)}
-        title="Delete Product"
+        isOpen={confirmDelete !== null}
+        onClose={() => setConfirmDelete(null)}
+        title="Remove product"
         size="sm"
       >
-        <p className="text-sm text-gray-600 mb-5">
-          Are you sure you want to delete this product? This action cannot be
-          undone.
+        <p className="text-[14px] leading-relaxed text-ink-700">
+          Remove{" "}
+          <span className="font-medium text-ink-950">
+            {confirmDelete?.name}
+          </span>{" "}
+          from the catalogue? Existing orders keep their record of it, but it
+          will no longer be listed or purchasable.
         </p>
-        <div className="flex gap-3 justify-end">
-          <Button variant="outline" onClick={() => setConfirmDeleteId(null)}>
-            Cancel
+
+        <div className="mt-6 flex justify-end gap-3">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => setConfirmDelete(null)}
+          >
+            Keep it
           </Button>
           <Button
+            type="button"
             variant="danger"
-            isLoading={deletingId === confirmDeleteId}
-            onClick={() => confirmDeleteId && handleDelete(confirmDeleteId)}
+            isLoading={isDeleting}
+            onClick={handleDelete}
           >
-            Delete
+            Remove
           </Button>
         </div>
       </Modal>

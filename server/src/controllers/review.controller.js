@@ -29,11 +29,11 @@ async function httpCreateReview(req, res) {
 
   if (title.trim().length === 0 || title.length > 100) {
     return res.status(400).json({
-      error: "Comment must between 1 and 100 characters",
+      error: "Title must be between 1 and 100 characters",
     });
   }
 
-  if (comment.trim().legnth === 0 || comment.length > 1000) {
+  if (comment.trim().length === 0 || comment.length > 1000) {
     return res.status(400).json({
       error: "Comments must be between 1 and 1000 characters",
     });
@@ -132,12 +132,15 @@ async function httpGetProductReviews(req, res) {
       });
     }
 
-    let sortOption = {};
-    if (sort === "rating" || sort === "rating") {
-      sortOption.rating = sort.startsWith("-") ? -1 : 1;
-    } else {
-      sortOption.createdAt = sort.startsWith("-") ? -1 : 1;
-    }
+    // Accepts "rating" / "-rating" / "createdAt" / "-createdAt". Strip the
+    // leading "-" before comparing, otherwise "-rating" never matches the
+    // rating branch and silently sorts by date instead.
+    const descending = sort.startsWith("-");
+    const sortField = descending ? sort.slice(1) : sort;
+    const sortOption =
+      sortField === "rating"
+        ? { rating: descending ? -1 : 1 }
+        : { createdAt: descending ? -1 : 1 };
 
     const pageNum = parseInt(page);
     const limitNum = parseInt(limit);
