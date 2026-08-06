@@ -64,7 +64,7 @@ export default function Cart() {
                 </>
               ) : (
                 <span className="font-medium text-ink-950">
-                  Shipping is on us — you're over{" "}
+                  Shipping is on us. You're over{" "}
                   {formatPrice(FREE_SHIPPING_THRESHOLD)}.
                 </span>
               )}

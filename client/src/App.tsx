@@ -30,7 +30,7 @@ export default function App() {
             <WishlistProvider>
               <ToastContainer />
               <Routes>
-                {/* Auth pages — no nav layout */}
+                {/* Auth pages, no nav layout */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/admin/login" element={<AdminLogin />} />

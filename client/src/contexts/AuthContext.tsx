@@ -16,7 +16,7 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   isAdmin: boolean;
   // True only when the admin authenticated through /admin/login in this tab.
-  // Dies when the tab closes — sessionStorage is tab-scoped.
+  // Dies when the tab closes, because sessionStorage is tab-scoped.
   isAdminSession: boolean;
   login: (email: string, password: string) => Promise<void>;
   adminLogin: (
@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Read from sessionStorage on mount — survives React re-renders but
+  // Read from sessionStorage on mount. Survives React re-renders but
   // not tab closes. useState initializer runs once, so this is safe.
   const [isAdminSession, setIsAdminSession] = useState<boolean>(() => {
     return sessionStorage.getItem(ADMIN_SESSION_KEY) === "true";
@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async (employeeId: string, email: string, password: string) => {
       const res = await authApi.adminLogin({ employeeId, email, password });
       setUser(res.user);
-      // Set the tab-scoped admin flag — dies when tab closes
+      // Set the tab-scoped admin flag, which dies when the tab closes
       sessionStorage.setItem(ADMIN_SESSION_KEY, "true");
       setIsAdminSession(true);
     },
@@ -96,7 +96,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await authApi.logout();
     } catch {
-      // ignore — clear local state regardless
+      // ignore, clear local state regardless
     }
     setUser(null);
     // Clear admin session flag on logout

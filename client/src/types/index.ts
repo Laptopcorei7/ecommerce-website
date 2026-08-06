@@ -93,7 +93,7 @@ export interface ProductReviewsResponse {
 
 export interface CreateReviewPayload {
   rating: number;
-  /** Required by the API — a review without one is rejected with a 400. */
+  /** Required by the API. A review without one is rejected with a 400. */
   title: string;
   comment: string;
 }

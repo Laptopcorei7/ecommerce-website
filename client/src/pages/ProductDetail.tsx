@@ -161,7 +161,7 @@ export default function ProductDetail() {
       setReviewTitle("");
       setReviewComment("");
       setReviewRating(5);
-      success("Thank you — your review is published.");
+      success("Thank you. Your review is published.");
     } catch (err) {
       error((err as Error).message || "Could not submit your review.");
     } finally {
@@ -253,7 +253,7 @@ export default function ProductDetail() {
           )}
         </div>
 
-        {/* Detail — sticks while the gallery scrolls */}
+        {/* Detail, sticks while the gallery scrolls */}
         <div className="lg:col-span-5">
           <div className="lg:sticky lg:top-24">
             <p className="meta">
@@ -353,7 +353,7 @@ export default function ProductDetail() {
                     size="lg"
                     className="flex-1"
                   >
-                    Add to bag — {formatPrice(product.price * quantity)}
+                    Add to bag · {formatPrice(product.price * quantity)}
                   </Button>
                 </div>
               )}
@@ -369,7 +369,7 @@ export default function ProductDetail() {
               </button>
             </div>
 
-            {/* Standing terms — the same three facts as the home page */}
+            {/* Standing terms: the same three facts as the home page */}
             <dl className="mt-8 grid grid-cols-1 gap-3 border-t border-ink-950/12 pt-6 text-[15px]">
               {[
                 [

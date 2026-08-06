@@ -38,8 +38,8 @@ export default function Loading({
 }
 
 /**
- * Skeletons use a background step rather than a shimmer sweep — on a paper
- * ground a moving highlight reads as a rendering bug.
+ * Skeletons use a background step rather than a shimmer sweep, because on a
+ * paper ground a moving highlight reads as a rendering bug.
  */
 export function LoadingSkeleton({ className = "" }: { className?: string }) {
   return <div className={`animate-pulse bg-paper-300 ${className}`} />;

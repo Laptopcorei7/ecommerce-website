@@ -16,7 +16,7 @@ const priceFormatter = new Intl.NumberFormat(LOCALE, {
   maximumFractionDigits: 2,
 });
 
-/** Whole-dollar amounts drop the cents — $148, not $148.00. */
+/** Whole-dollar amounts drop the cents: $148, not $148.00. */
 const wholePriceFormatter = new Intl.NumberFormat(LOCALE, {
   style: "currency",
   currency: CURRENCY,
@@ -47,9 +47,9 @@ const dateFormatter = new Intl.DateTimeFormat(LOCALE, {
 });
 
 export function formatDate(value: string | Date | undefined | null): string {
-  if (!value) return "—";
+  if (!value) return "–";
   const date = value instanceof Date ? value : new Date(value);
-  return Number.isNaN(date.getTime()) ? "—" : dateFormatter.format(date);
+  return Number.isNaN(date.getTime()) ? "–" : dateFormatter.format(date);
 }
 
 const RELATIVE_UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
@@ -65,13 +65,13 @@ const relativeFormatter = new Intl.RelativeTimeFormat(LOCALE, {
   numeric: "auto",
 });
 
-/** "3 days ago" — used on reviews and order history. */
+/** "3 days ago", used on reviews and order history. */
 export function formatRelative(
   value: string | Date | undefined | null,
 ): string {
-  if (!value) return "—";
+  if (!value) return "–";
   const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
+  if (Number.isNaN(date.getTime())) return "–";
 
   const elapsed = date.getTime() - Date.now();
   const magnitude = Math.abs(elapsed);
@@ -89,7 +89,7 @@ export function shortId(id: string, length = 8): string {
   return id.length <= length ? id : `…${id.slice(-length)}`;
 }
 
-/** "3 items" / "1 item" — avoids the "1 items" that plagues cart summaries. */
+/** "3 items" / "1 item". Avoids the "1 items" that plagues cart summaries. */
 export function pluralize(count: number, singular: string, plural?: string) {
   const word = count === 1 ? singular : (plural ?? `${singular}s`);
   return `${count} ${word}`;

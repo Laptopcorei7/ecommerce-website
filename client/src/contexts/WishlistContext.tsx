@@ -12,7 +12,7 @@ import { useAuth } from "./AuthContext";
 interface WishlistContextValue {
   items: WishlistItem[];
   isLoading: boolean;
-  // Fast O(1) lookup — pass a product _id, get back whether it's wishlisted
+  // Fast O(1) lookup. Pass a product _id, get back whether it's wishlisted
   isWishlisted: (productId: string) => boolean;
   addItem: (productId: string) => Promise<void>;
   removeItem: (productId: string) => Promise<void>;
@@ -38,7 +38,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
       const data = await wishlistApi.get();
       setItems(data.items);
       // Build a Set of product IDs for O(1) lookup in isWishlisted()
-      // The backend returns product.id (not product._id) — see wishlist controller
+      // The backend returns product.id (not product._id). See wishlist controller
       setWishlistedIds(new Set(data.items.map((i) => String(i.product.id))));
     } catch {
       setItems([]);
@@ -56,7 +56,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   const addItem = useCallback(
     async (productId: string) => {
       await wishlistApi.add(productId);
-      // Optimistic update — add to Set immediately, no full refetch needed
+      // Optimistic update: add to Set immediately, no full refetch needed
       setWishlistedIds((prev) => new Set(prev).add(productId));
       // Refresh to get the full item shape (needed by Wishlist page)
       await refreshWishlist();
@@ -66,7 +66,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
 
   const removeItem = useCallback(async (productId: string) => {
     await wishlistApi.remove(productId);
-    // Optimistic update — remove from Set immediately
+    // Optimistic update: remove from Set immediately
     setWishlistedIds((prev) => {
       const next = new Set(prev);
       next.delete(productId);

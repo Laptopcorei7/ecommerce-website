@@ -32,7 +32,7 @@
   }
 
   /* Fraunces carries the branding. SOFT rounds the terminals slightly and
-     WONK swaps in the single-storey g and splayed leg forms — the details
+     WONK swaps in the single-storey g and splayed leg forms, the details
      that stop it reading as another default serif. opsz is set per size in
      the display utilities below. */
   h1,
@@ -255,7 +255,7 @@
   }
 }
 
-/* Scrollbar — thin, ink, no track. */
+/* Scrollbar: thin, ink, no track. */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;

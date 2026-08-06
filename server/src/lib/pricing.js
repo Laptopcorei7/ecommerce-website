@@ -1,5 +1,5 @@
 /**
- * Order pricing — the single source of truth for what a customer is charged.
+ * Order pricing: the single source of truth for what a customer is charged.
  *
  * These numbers previously lived in three places that disagreed: the cart page
  * promised free shipping over $50, the product page said $75, and the order
@@ -7,8 +7,8 @@
  * billed another.
  *
  * `client/src/lib/pricing.ts` mirrors these constants so the storefront can
- * show a running total without a round trip. If you change one, change both —
- * the server value is the one that is actually charged.
+ * show a running total without a round trip. If you change one, change both.
+ * The server value is the one that is actually charged.
  */
 
 const FREE_SHIPPING_THRESHOLD = 75;

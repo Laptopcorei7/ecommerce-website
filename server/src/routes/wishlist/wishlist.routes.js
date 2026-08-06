@@ -13,7 +13,7 @@ const wishlistRouter = express.Router();
 
 // Scoped to /wishlist. A path-less `use` would run requireAuth against every
 // request that reached this router, including routes registered after it and
-// the terminal 404 — which then answered "please login" for any unknown URL.
+// the terminal 404, which then answered "please login" for any unknown URL.
 wishlistRouter.use("/wishlist", requireAuth);
 
 wishlistRouter.post("/wishlist", httpAddToWishlist);

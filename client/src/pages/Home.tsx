@@ -65,7 +65,7 @@ export default function Home() {
   const [arrivals, setArrivals] = useState<Product[]>([]);
 
   // Keep the visible search box in step when the query string changes from
-  // somewhere else — a footer link, or the back button.
+  // somewhere else, such as a footer link or the back button.
   useEffect(() => setSearchDraft(activeSearch), [activeSearch]);
 
   const filters: ProductFilters = useMemo(
@@ -137,7 +137,7 @@ export default function Home() {
           two-column hero. */}
       <section className="relative border-b border-ink-950/12">
         <div className="grid grid-cols-1 lg:grid-cols-12">
-          {/* Photograph — bleeds to the right page edge. Both children are
+          {/* Photograph, bleeding to the right page edge. Both children are
               placed on row 1 so the type block can overlap the image rather
               than stacking above it. */}
           <div className="order-1 lg:order-2 lg:col-span-7 lg:col-start-6 lg:row-start-1">
@@ -150,7 +150,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Type — sits on top of the photograph from lg up */}
+          {/* Type, sitting on top of the photograph from lg up */}
           <div className="relative order-2 lg:order-1 lg:z-10 lg:col-span-6 lg:col-start-1 lg:row-start-1 lg:self-center">
             <div className="bg-paper-100 px-5 py-12 sm:px-8 lg:max-w-xl lg:border lg:border-ink-950/12 lg:py-14 lg:pl-12 lg:pr-14">
               <p className="meta-accent">Established 2019 · Ships worldwide</p>
@@ -338,13 +338,13 @@ export default function Home() {
             </h2>
           </div>
           <p className="shrink-0 font-mono text-meta uppercase tabular text-ink-600">
-            {isLoading ? "—" : pluralize(totalItems, "item")}
+            {isLoading ? "–" : pluralize(totalItems, "item")}
           </p>
         </div>
 
         {/* Controls */}
         <div className="mt-8 border-y border-ink-950/12">
-          {/* Categories — a ruled row, not a strip of pills */}
+          {/* Categories: a ruled row, not a strip of pills */}
           <div className="no-scrollbar flex items-stretch gap-6 overflow-x-auto py-3">
             {CATEGORIES.map((category) => {
               const isActive = category === activeCategory;

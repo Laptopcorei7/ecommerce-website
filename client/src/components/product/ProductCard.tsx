@@ -126,7 +126,7 @@ export default function ProductCard({
           </span>
         )}
 
-        {/* Wishlist — a ruled square, not a floating white pill. */}
+        {/* Wishlist: a ruled square, not a floating white pill. */}
         <button
           type="button"
           onClick={handleWishlist}

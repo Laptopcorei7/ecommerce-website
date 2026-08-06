@@ -73,7 +73,7 @@ export default function Register() {
       return;
     }
     if (scorePassword(password) < 2) {
-      setFormError("Please choose a longer password — at least 8 characters.");
+      setFormError("Please choose a longer password, at least 8 characters.");
       return;
     }
 

@@ -1,7 +1,7 @@
 import React from "react";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  /** `brand` is the vermilion accent — reserve it for the single primary
+  /** `brand` is the vermilion accent. Reserve it for the single primary
    *  action on a screen (add to cart, place order). */
   variant?: "primary" | "secondary" | "outline" | "ghost" | "danger" | "brand";
   size?: "sm" | "md" | "lg";
@@ -63,7 +63,7 @@ export default function Button({
   );
 }
 
-/** Hairline ring — matches the rule weight used everywhere else. */
+/** Hairline ring, matching the rule weight used everywhere else. */
 function Spinner() {
   return (
     <span

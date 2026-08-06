@@ -43,7 +43,7 @@ export default function Wishlist() {
         <p className="meta">Saved</p>
         <h1 className="display mt-4 text-ink-950">Nothing saved yet</h1>
         <p className="mx-auto mt-4 max-w-sm text-[16px] leading-relaxed text-ink-600">
-          Save anything you're undecided about and it will wait here — including
+          Save anything you're undecided about and it will wait here, including
           things that are currently sold out.
         </p>
         <Link to="/" className="btn-primary mt-8">
@@ -111,7 +111,7 @@ export default function Wishlist() {
                 <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-3 pt-4">
                   {soldOut ? (
                     <span className="font-mono text-meta uppercase text-ink-600">
-                      Sold out — we'll restock
+                      Sold out. We'll restock
                     </span>
                   ) : (
                     <button

@@ -4,7 +4,7 @@
  * Bodies are written per category and per rating band rather than per product,
  * so they stay specific enough to read as real without needing 200 hand-written
  * entries. The seeder pairs these with the demo customers below and recomputes
- * each product's averageRating from what it actually inserted — the ratings the
+ * each product's averageRating from what it actually inserted, so the ratings the
  * storefront shows are always derived from real Review documents.
  */
 
@@ -147,7 +147,7 @@ const BODIES = {
     mixed: [
       [
         "Fit is odd on me",
-        "Nothing wrong with the make. The cut just doesn't suit my shape — returns were straightforward.",
+        "Nothing wrong with the make. The cut just doesn't suit my shape. Returns were straightforward.",
       ],
       [
         "Decent, not exceptional",
@@ -210,7 +210,7 @@ const BODIES = {
     good: [
       [
         "Good kit",
-        "Works well. Wish it came with a bag — everything ends up loose in a cupboard.",
+        "Works well. Wish it came with a bag. Everything ends up loose in a cupboard.",
       ],
       [
         "Pleased overall",
@@ -264,7 +264,7 @@ const BODIES = {
     mixed: [
       [
         "Not for me",
-        "Nothing wrong with it — it just didn't do much noticeable over six weeks.",
+        "Nothing wrong with it. It just didn't do much noticeable over six weeks.",
       ],
       [
         "Fine, expensive",

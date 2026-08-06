@@ -28,7 +28,7 @@ function errorHandler(err, req, res, next) {
   let message = err.message || "Something went wrong";
   let details;
 
-  // Schema validation — report every field at once rather than the first.
+  // Schema validation: report every field at once rather than the first.
   if (err.name === "ValidationError" && err.errors) {
     status = 400;
     message = "Validation failed";

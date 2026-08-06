@@ -23,12 +23,12 @@ function imageUrl(photo, width = 1200) {
 // ─────────────────────────────────────────────────────────────────────────────
 // Products
 //
-// price   — a coherent ladder from $16 to $680. Nothing that would look absurd
-//           beside its neighbours in the grid.
-// stock   — realistic depth; a few deliberately low or zero to exercise the
-//           "low stock" and "sold out" states in the UI.
-// rating  — held between 3.9 and 5.0. Ratings are recomputed from real reviews
-//           by review.controller, so these are only a starting position.
+// price:  a coherent ladder from $16 to $680. Nothing that would look absurd
+//         beside its neighbours in the grid.
+// stock:  realistic depth; a few deliberately low or zero to exercise the
+//         "low stock" and "sold out" states in the UI.
+// rating: held between 3.9 and 5.0. Ratings are recomputed from real reviews
+//         by review.controller, so these are only a starting position.
 // ─────────────────────────────────────────────────────────────────────────────
 const PRODUCTS = [
   // ── Electronics ───────────────────────────────────────────────────────────
@@ -66,7 +66,7 @@ const PRODUCTS = [
     reviews: 21,
     photo: "photo-1502920917128-1aa500764cbd",
     description:
-      "A 24-megapixel body built around the controls you actually reach for: a dial for exposure compensation, a proper shutter button, and a grip deep enough to hold one-handed. Weather-sealed at the seams. Sold as a body only — bring your own glass.",
+      "A 24-megapixel body built around the controls you actually reach for: a dial for exposure compensation, a proper shutter button, and a grip deep enough to hold one-handed. Weather-sealed at the seams. Sold as a body only, so bring your own glass.",
   },
   {
     name: "Field Camera Kit",
@@ -104,7 +104,7 @@ const PRODUCTS = [
     reviews: 112,
     photo: "photo-1514228742587-6b1558fcca3d",
     description:
-      "Thrown in a small studio and fired twice, so the glaze pools slightly where the wall meets the base. Holds 340ml — a proper mug, not a thimble. The unglazed foot ring means it will mark a bare wood table; use the coaster.",
+      "Thrown in a small studio and fired twice, so the glaze pools slightly where the wall meets the base. Holds 340ml, a proper mug rather than a thimble. The unglazed foot ring means it will mark a bare wood table; use the coaster.",
   },
   {
     name: "Morning Mug & Saucer",
@@ -140,7 +140,7 @@ const PRODUCTS = [
     reviews: 29,
     photo: "photo-1517705008128-361805f42e86",
     description:
-      "A moulded seat on a steel rod base — light enough to move with one hand, rigid enough to lean back in. The shell is a single piece with no upholstery to stain, which makes it the sensible chair to put at a desk that also serves dinner.",
+      "A moulded seat on a steel rod base, light enough to move with one hand and rigid enough to lean back in. The shell is a single piece with no upholstery to stain, which makes it the sensible chair to put at a desk that also serves dinner.",
   },
   {
     name: "Buttoned Armchair, Chalk",
@@ -164,7 +164,7 @@ const PRODUCTS = [
     reviews: 37,
     photo: "photo-1533090161767-e6ffed986c88",
     description:
-      "A 30cm oak face with brass hands and a silent sweep movement — no tick to notice at two in the morning. Runs a year on one AA. The numerals are printed, not applied, so there is nothing to catch dust.",
+      "A 30cm oak face with brass hands and a silent sweep movement, so there is no tick to notice at two in the morning. Runs a year on one AA. The numerals are printed, not applied, so there is nothing to catch dust.",
   },
   {
     name: "Brass Pendant, Set of Three",
@@ -176,7 +176,7 @@ const PRODUCTS = [
     reviews: 22,
     photo: "photo-1540932239986-30128078f3c5",
     description:
-      "Spun brass shades on braided cord, hung at three lengths so they read as a group over a table or an island. Unlacquered, so they will darken unevenly with handling — which is the point. Takes any E27 bulb; warm and dim suits them best.",
+      "Spun brass shades on braided cord, hung at three lengths so they read as a group over a table or an island. Unlacquered, so they will darken unevenly with handling, which is the point. Takes any E27 bulb; warm and dim suits them best.",
   },
   {
     name: "Hall Console, Ash",
@@ -212,7 +212,7 @@ const PRODUCTS = [
     reviews: 11,
     photo: "photo-1586023492125-27b2c045efd7",
     description:
-      "A tall back and a seat pitched slightly rearward — the geometry that lets you sit for two hours without shifting. Wool-blend cover in a dyed ochre that holds up to sunlight better than it looks like it should. Legs in solid oak.",
+      "A tall back and a seat pitched slightly rearward, the geometry that lets you sit for two hours without shifting. Wool-blend cover in a dyed ochre that holds up to sunlight better than it looks like it should. Legs in solid oak.",
   },
   {
     name: "Loose Leaf Tea Flight",
@@ -334,7 +334,7 @@ const PRODUCTS = [
     reviews: 27,
     photo: "photo-1533827432537-70133748f5c8",
     description:
-      "Hand-woven toquilla straw with a grosgrain band. Light enough to forget you have it on and tight enough in the weave to be worth wearing at noon. Rolls loosely for a bag — not tightly, and not for long.",
+      "Hand-woven toquilla straw with a grosgrain band. Light enough to forget you have it on and tight enough in the weave to be worth wearing at noon. Rolls loosely for a bag, though not tightly and not for long.",
   },
   {
     name: "Acetate Sunglasses",
@@ -370,7 +370,7 @@ const PRODUCTS = [
     reviews: 26,
     photo: "photo-1523170335258-f5ed11844a49",
     description:
-      "A 38mm case, a matte dial and numerals you can read at a glance — the point of a field watch. Hand-wound, so it stops if you neglect it, which some people find reassuring. Leather strap on quick-release pins.",
+      "A 38mm case, a matte dial and numerals you can read at a glance, which is the point of a field watch. Hand-wound, so it stops if you neglect it, which some people find reassuring. Leather strap on quick-release pins.",
   },
   {
     name: "Court Shoe, White",
@@ -408,7 +408,7 @@ const PRODUCTS = [
     reviews: 22,
     photo: "photo-1589998059171-988d887df646",
     description:
-      "Twenty-two short essays on reading, annotation and the things people write in the margins of borrowed books. Wide outer margins, deliberately — the book expects to be written in.",
+      "Twenty-two short essays on reading, annotation and the things people write in the margins of borrowed books. Wide outer margins, deliberately, because the book expects to be written in.",
   },
   {
     name: "Ruled Notebook, A5",
@@ -432,7 +432,7 @@ const PRODUCTS = [
     reviews: 79,
     photo: "photo-1544947950-fa07a98d237f",
     description:
-      "A pocket-sized collected edition with a matte cover that does not show fingerprints. Set in a generous size for its format — poetry set small is poetry unread. Ribbon marker.",
+      "A pocket-sized collected edition with a matte cover that does not show fingerprints. Set in a generous size for its format, because poetry set small is poetry unread. Ribbon marker.",
   },
   {
     name: "Field Notes on Making",
@@ -482,7 +482,7 @@ const PRODUCTS = [
     reviews: 36,
     photo: "photo-1608231387042-66d1773070a5",
     description:
-      "A flat-soled trainer with a wide toe box and a stable heel — better for lifting than anything with a cushion in it. Leather upper with perforated panels. Holds its shape after a year in a way mesh trainers do not.",
+      "A flat-soled trainer with a wide toe box and a stable heel, better for lifting than anything with a cushion in it. Leather upper with perforated panels. Holds its shape after a year in a way mesh trainers do not.",
   },
   {
     name: "Insulated Bottle, 750ml",
@@ -494,7 +494,7 @@ const PRODUCTS = [
     reviews: 103,
     photo: "photo-1602143407151-7111542de6e8",
     description:
-      "Double-walled steel that holds cold for 24 hours and hot for 12, with a mouth wide enough to take ice cubes and a brush. Powder-coated so it does not sweat onto a desk. The lid seals properly — it can go in a bag on its side.",
+      "Double-walled steel that holds cold for 24 hours and hot for 12, with a mouth wide enough to take ice cubes and a brush. Powder-coated so it does not sweat onto a desk. The lid seals properly, so it can go in a bag on its side.",
   },
 
   // ── Other ─────────────────────────────────────────────────────────────────
@@ -556,7 +556,7 @@ const PRODUCTS = [
     reviews: 33,
     photo: "photo-1611930022073-b7a4ba5fcccd",
     description:
-      "Three cold-pressed oils — hemp, rosehip and jojoba — in amber glass with pipettes, because these oxidise in clear bottles. Single-ingredient each, so you can work out what your skin actually objects to.",
+      "Three cold-pressed oils (hemp, rosehip and jojoba) in amber glass with pipettes, because these oxidise in clear bottles. Single-ingredient each, so you can work out what your skin actually objects to.",
   },
 ];
 
@@ -564,7 +564,7 @@ const PRODUCTS = [
 // Editorial imagery
 //
 // Photographs used for merchandising on the home page. They are not products
-// and are never inserted into the database — the client imports these through
+// and are never inserted into the database. The client imports these through
 // the storefront rather than fetching them.
 // ─────────────────────────────────────────────────────────────────────────────
 const EDITORIAL = {

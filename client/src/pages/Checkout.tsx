@@ -12,8 +12,8 @@ import { priceOrder } from "@/lib/pricing";
 type FormErrors = Partial<Record<keyof Address, string>>;
 
 /**
- * Presentational only. This project has no payment provider wired up — the
- * order controller takes a shipping address and nothing else — so the choice
+ * Presentational only. This project has no payment provider wired up. The
+ * order controller takes a shipping address and nothing else, so the choice
  * is recorded in the UI and the customer is told plainly that no payment is
  * collected.
  */

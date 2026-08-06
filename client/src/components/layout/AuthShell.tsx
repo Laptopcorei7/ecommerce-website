@@ -8,7 +8,7 @@ interface AuthShellProps {
   /** Which editorial photograph fills the left panel. */
   photo?: keyof typeof EDITORIAL;
   /**
-   * The line set over the photograph. Each page passes its own — the home
+   * The line set over the photograph. Each page passes its own, because the home
    * page's "Fewer things, chosen slowly." was previously repeated on all
    * three, which turned the best line in the build into wallpaper.
    */
@@ -35,7 +35,7 @@ export default function AuthShell({
     // These routes render outside <Layout>, so the shell owns the full
     // viewport rather than sitting below a header.
     <div className="grid min-h-screen lg:grid-cols-2">
-      {/* Photograph — hidden on small screens, where it would push the form
+      {/* Photograph, hidden on small screens where it would push the form
           below the fold for no benefit. */}
       <div className="relative hidden border-r border-ink-950/12 lg:block">
         <div className="well sticky top-0 h-screen">
