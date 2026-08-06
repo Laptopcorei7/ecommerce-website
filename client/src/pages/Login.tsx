@@ -46,6 +46,7 @@ export default function Login() {
       title="Sign in"
       intro="Your bag, saved items and order history are kept against your account."
       photo="workshop"
+      caption="Everything you left in your bag is still there."
       footer={
         <>
           No account yet?{" "}

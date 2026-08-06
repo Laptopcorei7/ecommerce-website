@@ -5,13 +5,22 @@ import type { OrderStatus } from "@/types";
  * The dot is the only place colour is spent, which keeps five statuses legible
  * without introducing five new background tones to the palette.
  */
+/**
+ * The dot darkens as the order advances — clay while it is waiting on us,
+ * vermilion while it is being worked, then ink through dispatch to delivered.
+ * Cancelled fades out instead of progressing.
+ *
+ * Expressing five states as one darkening ramp keeps the palette closed. The
+ * alternative — a green for "delivered", a blue for "shipped" — is how a
+ * declared four-colour system quietly becomes seven.
+ */
 const statusConfig: Record<OrderStatus, { label: string; dot: string }> = {
-  pending: { label: "Pending", dot: "bg-clay-dark" },
-  paid: { label: "Paid", dot: "bg-emerald-600" },
+  pending: { label: "Pending", dot: "bg-clay" },
+  paid: { label: "Paid", dot: "bg-clay-dark" },
   processing: { label: "Processing", dot: "bg-vermilion-500" },
-  shipped: { label: "Shipped", dot: "bg-ink-700" },
-  delivered: { label: "Delivered", dot: "bg-emerald-700" },
-  cancelled: { label: "Cancelled", dot: "bg-ink-300" },
+  shipped: { label: "Shipped", dot: "bg-ink-600" },
+  delivered: { label: "Delivered", dot: "bg-ink-950" },
+  cancelled: { label: "Cancelled", dot: "bg-ink-200" },
 };
 
 export function OrderStatusBadge({ status }: { status: OrderStatus }) {
@@ -40,7 +49,7 @@ interface BadgeProps {
 const colorMap: Record<NonNullable<BadgeProps["color"]>, string> = {
   gray: "text-ink-600 border-ink-950/20",
   blue: "text-ink-800 border-ink-950/30",
-  green: "text-emerald-800 border-emerald-800/30",
+  green: "text-ink-950 border-ink-950/40",
   red: "text-vermilion-700 border-vermilion-700/35",
   yellow: "text-clay-dark border-clay-dark/50",
   purple: "text-ink-700 border-ink-950/25",
@@ -49,7 +58,7 @@ const colorMap: Record<NonNullable<BadgeProps["color"]>, string> = {
 const filledMap: Record<NonNullable<BadgeProps["color"]>, string> = {
   gray: "bg-ink-100 text-ink-700",
   blue: "bg-ink-800 text-paper-50",
-  green: "bg-emerald-800 text-paper-50",
+  green: "bg-ink-950 text-paper-50",
   red: "bg-vermilion-600 text-paper-50",
   yellow: "bg-clay text-ink-950",
   purple: "bg-ink-700 text-paper-50",

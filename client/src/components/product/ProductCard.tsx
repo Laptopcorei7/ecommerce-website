@@ -138,7 +138,7 @@ export default function ProductCard({
                       ${
                         wishlisted
                           ? "border-ink-950 bg-ink-950 text-paper-50 opacity-100"
-                          : "border-ink-950/24 bg-paper-50/80 text-ink-700 opacity-0 backdrop-blur-sm hover:border-ink-950 group-hover:opacity-100 focus-visible:opacity-100"
+                          : "border-ink-950/24 bg-paper-50 text-ink-700 opacity-0 hover:border-ink-950 group-hover:opacity-100 focus-visible:opacity-100"
                       }`}
         >
           <svg
