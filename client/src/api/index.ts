@@ -64,7 +64,18 @@ class ApiClient {
     const text = await response.text();
     if (!text) return undefined as T;
 
-    return JSON.parse(text) as T;
+    try {
+      return JSON.parse(text) as T;
+    } catch {
+      const error = new Error(
+        `Malformed JSON response from ${endpoint}`,
+      ) as Error & { status: number };
+      error.status = response.status;
+      console.error(
+        `API Error [${response.status}] ${endpoint}: response body was not JSON`,
+      );
+      throw error;
+    }
   }
 
   get<T>(

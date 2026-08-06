@@ -30,7 +30,7 @@ async function httpForgotPassword(req, res) {
       .digest("hex");
 
     user.resetPasswordToken = hashedToken;
-    user.resetPasswordTokenExpires = Date.now() + 60 + 60 * 1000;
+    user.resetPasswordTokenExpires = Date.now() + 60 * 60 * 1000;
 
     await user.save();
 

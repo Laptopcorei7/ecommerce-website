@@ -32,9 +32,9 @@ async function httpAddNewUser(req, res) {
   }
 
   if (
-    typeof name != "string" ||
-    typeof email != "string" ||
-    typeof password != "string"
+    typeof name !== "string" ||
+    typeof email !== "string" ||
+    typeof password !== "string"
   ) {
     return res.status(400).json({
       error: "Invalid data types",

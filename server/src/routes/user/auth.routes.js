@@ -13,21 +13,25 @@ const {
   httpVerifyResetToken,
 } = require("../../controllers/password-reset.controller");
 const { requireAuth } = require("../../middleware/auth.middleware");
+const {
+  authLimiter,
+  registerLimiter,
+} = require("../../middleware/rate-limit.middleware");
 
 const authRouter = express.Router();
 
 // Public routes (no auth required)
-authRouter.post("/register", httpAddNewUser);
+authRouter.post("/register", registerLimiter, httpAddNewUser);
 authRouter.get("/verify", httpVerifyEmail);
-authRouter.post("/login", httpLogin);
-authRouter.post("/forgot-password", httpForgotPassword);
-authRouter.post("/reset-password", httpResetPassword);
+authRouter.post("/login", authLimiter, httpLogin);
+authRouter.post("/forgot-password", authLimiter, httpForgotPassword);
+authRouter.post("/reset-password", authLimiter, httpResetPassword);
 authRouter.get("/reset/:token", httpVerifyResetToken);
 
 // Protected routes (auth required)
 authRouter.get("/me", requireAuth, httpGetMe);
 authRouter.post("/logout", requireAuth, httpLogout);
-authRouter.post("/admin/login", httpAdminLogin);
+authRouter.post("/admin/login", authLimiter, httpAdminLogin);
 
 module.exports = {
   authRouter: authRouter,
