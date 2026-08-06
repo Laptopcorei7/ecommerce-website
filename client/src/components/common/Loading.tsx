@@ -1,20 +1,26 @@
 interface LoadingProps {
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: "sm" | "md" | "lg" | "xl";
   fullPage?: boolean;
   message?: string;
 }
 
 const sizeMap = {
-  sm: 'h-5 w-5 border-2',
-  md: 'h-8 w-8 border-2',
-  lg: 'h-12 w-12 border-3',
-  xl: 'h-16 w-16 border-4',
+  sm: "h-5 w-5 border-2",
+  md: "h-8 w-8 border-2",
+  lg: "h-12 w-12 border-3",
+  xl: "h-16 w-16 border-4",
 };
 
-export default function Loading({ size = 'md', fullPage = false, message }: LoadingProps) {
+export default function Loading({
+  size = "md",
+  fullPage = false,
+  message,
+}: LoadingProps) {
   const spinner = (
     <div className="flex flex-col items-center gap-3">
-      <div className={`${sizeMap[size]} rounded-full border-brand-200 border-t-brand-600 animate-spin`} />
+      <div
+        className={`${sizeMap[size]} rounded-full border-brand-200 border-t-brand-600 animate-spin`}
+      />
       {message && <p className="text-sm text-ink-400 font-medium">{message}</p>}
     </div>
   );
@@ -28,14 +34,14 @@ export default function Loading({ size = 'md', fullPage = false, message }: Load
   }
 
   return (
-    <div className="flex items-center justify-center py-16">
-      {spinner}
-    </div>
+    <div className="flex items-center justify-center py-16">{spinner}</div>
   );
 }
 
-export function LoadingSkeleton({ className = '' }: { className?: string }) {
-  return <div className={`animate-pulse bg-ink-200 rounded-2xl ${className}`} />;
+export function LoadingSkeleton({ className = "" }: { className?: string }) {
+  return (
+    <div className={`animate-pulse bg-ink-200 rounded-2xl ${className}`} />
+  );
 }
 
 export function ProductCardSkeleton() {
