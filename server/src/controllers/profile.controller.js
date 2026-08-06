@@ -56,7 +56,7 @@ async function httpUpdateProfile(req, res) {
     const sessionUpdates = {};
 
     if (name) {
-      if (typeof name != "string" || name.trim().length === 0) {
+      if (typeof name !== "string" || name.trim().length === 0) {
         return res.status(400).json({
           error: "Invalid name",
         });
@@ -72,7 +72,7 @@ async function httpUpdateProfile(req, res) {
         });
       }
 
-      if (email != user.email) {
+      if (email !== user.email) {
         const existingUser = await Register.findOne({ email: email });
 
         if (existingUser) {
@@ -176,9 +176,6 @@ async function httpChangePassword(req, res) {
         error: "New password must be different from current password",
       });
     }
-
-    // TODO: Invalidate other sessions (optional security measure)
-    // For now, we'll keep the current session active
 
     user.password = newPassword;
     await user.save();

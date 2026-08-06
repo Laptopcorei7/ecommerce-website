@@ -50,9 +50,12 @@ export default function ProductDetail() {
               (item) => item.product.id.toString() === id,
             );
             setWishlisted(isWishlisted);
-          } catch {}
+          } catch {
+            // Non-fatal: the page still works without the wishlist state.
+          }
         }
-      } catch {
+      } catch (err) {
+        console.error("Failed to load product", id, err);
       } finally {
         setIsLoading(false);
       }

@@ -16,6 +16,27 @@ function generateOrderNumber() {
   return `ORD-${year}${month}${day}-${random}`;
 }
 
+// Puts every line of an order back into stock in a single round trip.
+// $inc is applied by the server, so overlapping restocks cannot lose an update
+// the way `product.stock += n; product.save()` can. A line whose product no
+// longer exists matches nothing and is skipped, which is what the previous
+// per-item `if (product)` check did.
+async function restockOrderItems(items, session) {
+  if (items.length === 0) {
+    return;
+  }
+
+  await Product.bulkWrite(
+    items.map((item) => ({
+      updateOne: {
+        filter: { _id: item.productId },
+        update: { $inc: { stock: item.quantity } },
+      },
+    })),
+    { session: session },
+  );
+}
+
 async function httpCreateOrder(req, res) {
   const userId = req.user.id;
   const { shippingAddress } = req.body;
@@ -104,10 +125,30 @@ async function httpCreateOrder(req, res) {
       { session },
     );
 
-    for (const cartItem of cartItems) {
-      const product = cartItem.productId;
-      product.stock -= cartItem.quantity;
-      await product.save({ session });
+    // One round trip, and the `stock: { $gte: quantity }` filter re-checks
+    // availability at write time. The loop above read stock earlier in the
+    // request; between then and now another order could have taken the last
+    // unit. A line that no longer has the stock simply does not match, so a
+    // short modifiedCount means someone got there first and the whole order
+    // is rolled back rather than overselling.
+    const stockResult = await Product.bulkWrite(
+      cartItems.map((cartItem) => ({
+        updateOne: {
+          filter: {
+            _id: cartItem.productId._id,
+            stock: { $gte: cartItem.quantity },
+          },
+          update: { $inc: { stock: -cartItem.quantity } },
+        },
+      })),
+      { session: session },
+    );
+
+    if (stockResult.modifiedCount !== cartItems.length) {
+      await session.abortTransaction();
+      return res.status(409).json({
+        error: "Stock changed while placing your order. Please try again.",
+      });
     }
 
     await Cart.deleteMany({ userId: userId }, { session });
@@ -319,10 +360,17 @@ async function httpUpdateOrderStatus(req, res) {
     });
   }
 
+  // Restocking and the status change have to land together: a crash between
+  // them would either restock an order that is still open, or cancel one
+  // without returning its stock.
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
-    const order = await Order.findById(id);
+    const order = await Order.findById(id).session(session);
 
     if (!order) {
+      await session.abortTransaction();
       return res.status(404).json({
         error: "Order not found",
       });
@@ -332,16 +380,12 @@ async function httpUpdateOrderStatus(req, res) {
     order.status = status;
 
     if (status === "cancelled" && previousStatus !== "cancelled") {
-      for (const item of order.items) {
-        const product = await Product.findById(item.productId);
-        if (product) {
-          product.stock += item.quantity;
-          await product.save();
-        }
-      }
+      await restockOrderItems(order.items, session);
     }
 
-    await order.save();
+    await order.save({ session });
+
+    await session.commitTransaction();
 
     return res.status(200).json({
       message: "Order status updated",
@@ -354,6 +398,9 @@ async function httpUpdateOrderStatus(req, res) {
       },
     });
   } catch (err) {
+    if (session.inTransaction()) {
+      await session.abortTransaction();
+    }
     console.error("Update order status error:", err);
 
     if (err.kind === "ObjectId") {
@@ -365,6 +412,8 @@ async function httpUpdateOrderStatus(req, res) {
     return res.status(500).json({
       error: "Failed to update order status",
     });
+  } finally {
+    session.endSession();
   }
 }
 
@@ -376,22 +425,32 @@ async function httpCancelOrder(req, res) {
     return res.status(404).json({ error: "Order not found" });
   }
 
+  // Same reasoning as httpUpdateOrderStatus: the restock and the status change
+  // are one unit of work. Reading the order inside the transaction also means
+  // two overlapping cancellations conflict on the order document instead of
+  // both passing the status check and restocking twice.
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
-    const order = await Order.findById(id);
+    const order = await Order.findById(id).session(session);
 
     if (!order) {
+      await session.abortTransaction();
       return res.status(404).json({
         error: "Order not found",
       });
     }
 
     if (order.userId.toString() !== userId.toString()) {
+      await session.abortTransaction();
       return res.status(403).json({
         error: "Not your order",
       });
     }
 
     if (!["pending", "paid"].includes(order.status)) {
+      await session.abortTransaction();
       return res.status(400).json({
         error: "Order cannot be cancelled at this stage.",
       });
@@ -399,15 +458,11 @@ async function httpCancelOrder(req, res) {
 
     order.status = "cancelled";
 
-    for (const item of order.items) {
-      const product = await Product.findById(item.productId);
-      if (product) {
-        product.stock += item.quantity;
-        await product.save();
-      }
-    }
+    await restockOrderItems(order.items, session);
 
-    await order.save();
+    await order.save({ session });
+
+    await session.commitTransaction();
 
     return res.status(200).json({
       message: "Order cancelled successfully",
@@ -418,10 +473,15 @@ async function httpCancelOrder(req, res) {
       },
     });
   } catch (err) {
+    if (session.inTransaction()) {
+      await session.abortTransaction();
+    }
     console.error("Cancel order error:", err);
     return res.status(500).json({
       error: "Failed to cancel order",
     });
+  } finally {
+    session.endSession();
   }
 }
 

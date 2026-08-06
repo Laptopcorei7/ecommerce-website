@@ -2,6 +2,7 @@ const validator = require("validator");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const fs = require("fs");
+const fsp = require("fs/promises");
 const path = require("path");
 
 const register = require("../models/user/register.mongo");
@@ -10,6 +11,9 @@ const SESSION_FILE = path.join(__dirname, "../../data/sessions.json");
 const SESSION_DURATION = 24 * 60 * 60 * 1000;
 let sessions = {};
 
+// Deliberately synchronous: this runs once while the module is being required,
+// before the server binds a port. Doing it asynchronously would let the first
+// requests through against an empty session map and log everyone out.
 try {
   if (fs.existsSync(SESSION_FILE)) {
     const data = fs.readFileSync(SESSION_FILE, "utf-8").trim();
@@ -23,16 +27,43 @@ try {
   sessions = {};
 }
 
+let savePending = false;
+let saveInFlight = null;
+
+// Unlike the load above, this runs on the request path — every login, logout
+// and password change calls it — so it must not stall the event loop.
+//
+// Callers do not await it. Overlapping calls collapse into a single trailing
+// write of the latest state, and the write goes to a temp file that is renamed
+// over the real one, so a crash mid-write cannot leave a truncated
+// sessions.json that the next boot would fail to parse.
 function saveSessions() {
-  try {
-    const dir = path.dirname(SESSION_FILE);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    fs.writeFileSync(SESSION_FILE, JSON.stringify(sessions, null, 2));
-  } catch (err) {
-    console.error("Error saving sessions:", err);
+  savePending = true;
+
+  if (saveInFlight) {
+    return saveInFlight;
   }
+
+  saveInFlight = (async () => {
+    try {
+      while (savePending) {
+        savePending = false;
+
+        const snapshot = JSON.stringify(sessions, null, 2);
+        const tmpFile = `${SESSION_FILE}.${process.pid}.tmp`;
+
+        await fsp.mkdir(path.dirname(SESSION_FILE), { recursive: true });
+        await fsp.writeFile(tmpFile, snapshot);
+        await fsp.rename(tmpFile, SESSION_FILE);
+      }
+    } catch (err) {
+      console.error("Error saving sessions:", err);
+    } finally {
+      saveInFlight = null;
+    }
+  })();
+
+  return saveInFlight;
 }
 
 function generateSessionId() {
