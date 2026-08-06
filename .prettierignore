@@ -1,0 +1,10 @@
+node_modules
+dist
+build
+coverage
+
+# Generated — reformatting creates noisy diffs.
+package-lock.json
+
+# Runtime data written by the server.
+server/data

@@ -91,6 +91,7 @@ src/
 ## Backend Requirements
 
 Your API must support:
+
 - `credentials: 'include'` (CORS with `credentials: true` and `Access-Control-Allow-Origin` set to `http://localhost:3000`)
 - `sessionId` httpOnly cookie for authentication
 - All endpoints documented in the project brief

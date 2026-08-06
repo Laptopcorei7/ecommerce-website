@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -10,14 +10,24 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export default function Input({
-  label, error, hint, leftIcon, rightIcon,
-  fullWidth = true, className = '', id, ...props
+  label,
+  error,
+  hint,
+  leftIcon,
+  rightIcon,
+  fullWidth = true,
+  className = "",
+  id,
+  ...props
 }: InputProps) {
-  const inputId = id || label?.toLowerCase().replace(/\s+/g, '-');
+  const inputId = id || label?.toLowerCase().replace(/\s+/g, "-");
   return (
-    <div className={fullWidth ? 'w-full' : ''}>
+    <div className={fullWidth ? "w-full" : ""}>
       {label && (
-        <label htmlFor={inputId} className="block text-sm font-medium text-ink-700 mb-1.5">
+        <label
+          htmlFor={inputId}
+          className="block text-sm font-medium text-ink-700 mb-1.5"
+        >
           {label}
           {props.required && <span className="text-red-400 ml-1">*</span>}
         </label>
@@ -33,9 +43,9 @@ export default function Input({
           {...props}
           className={`
             input-field
-            ${error ? 'border-red-400 focus:border-red-400 focus:ring-red-100' : ''}
-            ${leftIcon ? 'pl-10' : ''}
-            ${rightIcon ? 'pr-10' : ''}
+            ${error ? "border-red-400 focus:border-red-400 focus:ring-red-100" : ""}
+            ${leftIcon ? "pl-10" : ""}
+            ${rightIcon ? "pr-10" : ""}
             ${className}
           `}
         />

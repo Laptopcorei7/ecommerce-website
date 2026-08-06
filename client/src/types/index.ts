@@ -103,12 +103,7 @@ export interface Cart {
 // ─── Orders ──────────────────────────────────────────────────────────────────
 
 export type OrderStatus =
-  | "pending"
-  | "paid"
-  | "processing"
-  | "shipped"
-  | "delivered"
-  | "cancelled";
+  "pending" | "paid" | "processing" | "shipped" | "delivered" | "cancelled";
 
 export interface OrderItem {
   id: string;
