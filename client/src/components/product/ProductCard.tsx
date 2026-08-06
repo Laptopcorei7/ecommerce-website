@@ -110,7 +110,7 @@ export default function ProductCard({
           </>
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-paper-300">
-            <span className="meta text-ink-400">No image</span>
+            <span className="meta text-ink-600">No image</span>
           </div>
         )}
 
@@ -164,29 +164,29 @@ export default function ProductCard({
               it disappeared against dark images. */}
           <span className="meta">
             {index !== undefined && (
-              <span className="text-ink-300">
+              <span className="text-ink-600">
                 {String(index + 1).padStart(3, "0")} ·{" "}
               </span>
             )}
             {product.category}
           </span>
           {product.averageRating > 0 && (
-            <span className="font-mono text-meta-xs tabular text-ink-400">
+            <span className="font-mono text-meta-xs tabular text-ink-600">
               {product.averageRating.toFixed(1)} · {product.totalReviews}
             </span>
           )}
         </div>
 
-        <h3 className="mt-2 text-[15px] font-medium leading-snug tracking-tight text-ink-950 line-clamp-2">
+        <h3 className="mt-2 text-[16px] font-medium leading-snug tracking-tight text-ink-950 line-clamp-2">
           {product.name}
         </h3>
 
         {product.brand && (
-          <p className="mt-0.5 text-[13px] text-ink-500">{product.brand}</p>
+          <p className="mt-0.5 text-[15px] text-ink-600">{product.brand}</p>
         )}
 
         <div className="mt-auto flex items-end justify-between gap-3 pt-4">
-          <span className="font-mono text-sm tabular text-ink-950">
+          <span className="font-mono text-[15px] tabular text-ink-950">
             {formatPrice(product.price)}
           </span>
 
@@ -195,9 +195,9 @@ export default function ProductCard({
               type="button"
               onClick={handleAddToCart}
               disabled={adding}
-              className="font-mono text-meta uppercase text-ink-500 underline-offset-4
+              className="font-mono text-meta uppercase text-ink-600 underline-offset-4
                          transition-colors duration-200 hover:text-vermilion-600 hover:underline
-                         disabled:text-ink-300"
+                         disabled:text-ink-400"
             >
               {adding ? "Adding" : "Add"}
             </button>

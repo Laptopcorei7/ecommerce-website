@@ -239,7 +239,7 @@ export default function AdminProducts() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by name"
-          className="h-9 flex-1 border-0 border-b border-transparent bg-transparent px-0 font-mono text-meta uppercase text-ink-950 placeholder:text-ink-400 focus:border-ink-950 focus:outline-none focus:ring-0"
+          className="h-9 flex-1 border-0 border-b border-transparent bg-transparent px-0 font-mono text-meta uppercase text-ink-950 placeholder:text-ink-600 focus:border-ink-950 focus:outline-none focus:ring-0"
         />
         {search && (
           <button
@@ -248,7 +248,7 @@ export default function AdminProducts() {
               setSearch("");
               fetchProducts();
             }}
-            className="font-mono text-meta uppercase text-ink-400 hover:text-vermilion-600"
+            className="font-mono text-meta uppercase text-ink-600 hover:text-vermilion-600"
           >
             Clear
           </button>
@@ -258,7 +258,7 @@ export default function AdminProducts() {
       {isLoading ? (
         <Loading message="Loading catalogue" />
       ) : products.length === 0 ? (
-        <p className="mt-10 border border-ink-950/12 px-6 py-16 text-center text-[14px] text-ink-500">
+        <p className="mt-10 border border-ink-950/12 px-6 py-16 text-center text-[15px] text-ink-600">
           {search ? "Nothing matches that search." : "The catalogue is empty."}
         </p>
       ) : (
@@ -278,7 +278,7 @@ export default function AdminProducts() {
                   <th
                     key={i}
                     scope="col"
-                    className="py-3 pr-6 font-mono text-meta font-normal uppercase text-ink-500"
+                    className="py-3 pr-6 font-mono text-meta font-normal uppercase text-ink-600"
                   >
                     {heading}
                   </th>
@@ -302,12 +302,12 @@ export default function AdminProducts() {
                     <td className="py-3 pr-6">
                       <Link
                         to={`/products/${product._id}`}
-                        className="text-[14px] font-medium tracking-tight text-ink-950 hover:text-vermilion-600"
+                        className="text-[15px] font-medium tracking-tight text-ink-950 hover:text-vermilion-600"
                       >
                         {product.name}
                       </Link>
                       {product.brand && (
-                        <p className="mt-0.5 text-[12px] text-ink-500">
+                        <p className="mt-0.5 text-[13px] text-ink-600">
                           {product.brand}
                         </p>
                       )}
@@ -315,14 +315,14 @@ export default function AdminProducts() {
                     <td className="py-3 pr-6 font-mono text-meta uppercase text-ink-600">
                       {product.category}
                     </td>
-                    <td className="py-3 pr-6 font-mono text-[13px] tabular text-ink-950">
+                    <td className="py-3 pr-6 font-mono text-[15px] tabular text-ink-950">
                       {formatPrice(product.price)}
                     </td>
                     <td className="py-3 pr-6">
                       <span
-                        className={`font-mono text-[13px] tabular ${
+                        className={`font-mono text-[15px] tabular ${
                           soldOut
-                            ? "text-ink-300"
+                            ? "text-ink-600"
                             : low
                               ? "text-vermilion-600"
                               : "text-ink-950"
@@ -331,7 +331,7 @@ export default function AdminProducts() {
                         {soldOut ? "Sold out" : product.stock}
                       </span>
                     </td>
-                    <td className="py-3 pr-6 font-mono text-[13px] tabular text-ink-600">
+                    <td className="py-3 pr-6 font-mono text-[15px] tabular text-ink-600">
                       {product.averageRating > 0
                         ? `${product.averageRating.toFixed(1)} · ${product.totalReviews}`
                         : "—"}
@@ -341,14 +341,14 @@ export default function AdminProducts() {
                         <button
                           type="button"
                           onClick={() => openEdit(product)}
-                          className="font-mono text-meta uppercase text-ink-500 underline-offset-4 transition-colors hover:text-ink-950 hover:underline"
+                          className="font-mono text-meta uppercase text-ink-600 underline-offset-4 transition-colors hover:text-ink-950 hover:underline"
                         >
                           Edit
                         </button>
                         <button
                           type="button"
                           onClick={() => setConfirmDelete(product)}
-                          className="font-mono text-meta uppercase text-ink-400 underline-offset-4 transition-colors hover:text-vermilion-600 hover:underline"
+                          className="font-mono text-meta uppercase text-ink-600 underline-offset-4 transition-colors hover:text-vermilion-600 hover:underline"
                         >
                           Delete
                         </button>
@@ -410,7 +410,7 @@ export default function AdminProducts() {
                 ))}
               </select>
               {formErrors.category && (
-                <p className="mt-1.5 text-xs text-vermilion-700">
+                <p className="mt-1.5 text-[13px] text-vermilion-700">
                   {formErrors.category}
                 </p>
               )}
@@ -462,9 +462,9 @@ export default function AdminProducts() {
                 onChange={field("images")}
                 rows={3}
                 placeholder="One per line"
-                className="field h-auto resize-none py-2.5 font-mono text-[12px]"
+                className="field h-auto resize-none py-2.5 font-mono text-[13px]"
               />
-              <p className="mt-1.5 text-xs text-ink-500">
+              <p className="mt-1.5 text-[13px] text-ink-600">
                 One per line, or comma separated. The first is used as the
                 thumbnail.
               </p>
@@ -493,7 +493,7 @@ export default function AdminProducts() {
         title="Remove product"
         size="sm"
       >
-        <p className="text-[14px] leading-relaxed text-ink-700">
+        <p className="text-[15px] leading-relaxed text-ink-700">
           Remove{" "}
           <span className="font-medium text-ink-950">
             {confirmDelete?.name}

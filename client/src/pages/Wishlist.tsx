@@ -42,7 +42,7 @@ export default function Wishlist() {
       <div className="shell py-32 text-center">
         <p className="meta">Saved</p>
         <h1 className="display mt-4 text-ink-950">Nothing saved yet</h1>
-        <p className="mx-auto mt-4 max-w-sm text-[15px] leading-relaxed text-ink-600">
+        <p className="mx-auto mt-4 max-w-sm text-[16px] leading-relaxed text-ink-600">
           Save anything you're undecided about and it will wait here — including
           things that are currently sold out.
         </p>
@@ -62,7 +62,7 @@ export default function Wishlist() {
             Things you're weighing up
           </h1>
         </div>
-        <p className="shrink-0 font-mono text-meta uppercase tabular text-ink-500">
+        <p className="shrink-0 font-mono text-meta uppercase tabular text-ink-600">
           {pluralize(items.length, "item")}
         </p>
       </header>
@@ -94,23 +94,23 @@ export default function Wishlist() {
                     </p>
                     <Link
                       to={`/products/${product.id}`}
-                      className="mt-1.5 block text-[15px] font-medium leading-snug tracking-tight text-ink-950 hover:text-vermilion-600"
+                      className="mt-1.5 block text-[16px] font-medium leading-snug tracking-tight text-ink-950 hover:text-vermilion-600"
                     >
                       {product.name}
                     </Link>
-                    <p className="mt-1 font-mono text-meta-xs uppercase text-ink-400">
+                    <p className="mt-1 font-mono text-meta-xs uppercase text-ink-600">
                       Saved {formatRelative(addedAt)}
                     </p>
                   </div>
 
-                  <span className="shrink-0 font-mono text-sm tabular text-ink-950">
+                  <span className="shrink-0 font-mono text-[15px] tabular text-ink-950">
                     {formatPrice(product.price)}
                   </span>
                 </div>
 
                 <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-3 pt-4">
                   {soldOut ? (
-                    <span className="font-mono text-meta uppercase text-ink-400">
+                    <span className="font-mono text-meta uppercase text-ink-600">
                       Sold out — we'll restock
                     </span>
                   ) : (
@@ -128,7 +128,7 @@ export default function Wishlist() {
                     type="button"
                     onClick={() => handleRemove(product.id, product.name)}
                     disabled={busy}
-                    className="font-mono text-meta uppercase text-ink-400 underline-offset-4 transition-colors hover:text-vermilion-600 hover:underline disabled:opacity-40"
+                    className="font-mono text-meta uppercase text-ink-600 underline-offset-4 transition-colors hover:text-vermilion-600 hover:underline disabled:opacity-40"
                   >
                     Remove
                   </button>

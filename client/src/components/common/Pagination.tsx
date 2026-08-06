@@ -50,7 +50,7 @@ export default function Pagination({
         type="button"
         onClick={() => onPageChange(page - 1)}
         disabled={atStart}
-        className="font-mono text-meta uppercase text-ink-600 transition-colors hover:text-ink-950 disabled:pointer-events-none disabled:text-ink-300"
+        className="font-mono text-meta uppercase text-ink-600 transition-colors hover:text-ink-950 disabled:pointer-events-none disabled:text-ink-400"
       >
         ← Previous
       </button>
@@ -61,7 +61,7 @@ export default function Pagination({
             <li
               key={`gap-${i}`}
               aria-hidden
-              className="px-1 font-mono text-meta text-ink-300"
+              className="px-1 font-mono text-meta text-ink-600"
             >
               …
             </li>
@@ -89,7 +89,7 @@ export default function Pagination({
         type="button"
         onClick={() => onPageChange(page + 1)}
         disabled={atEnd}
-        className="font-mono text-meta uppercase text-ink-600 transition-colors hover:text-ink-950 disabled:pointer-events-none disabled:text-ink-300"
+        className="font-mono text-meta uppercase text-ink-600 transition-colors hover:text-ink-950 disabled:pointer-events-none disabled:text-ink-400"
       >
         Next →
       </button>

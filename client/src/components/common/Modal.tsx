@@ -102,7 +102,7 @@ export default function Modal({
               type="button"
               onClick={onClose}
               aria-label="Close"
-              className="-mr-2 grid h-8 w-8 place-items-center text-ink-500 transition-colors hover:text-ink-950"
+              className="-mr-2 grid h-8 w-8 place-items-center text-ink-600 transition-colors hover:text-ink-950"
             >
               <svg
                 className="h-4 w-4"

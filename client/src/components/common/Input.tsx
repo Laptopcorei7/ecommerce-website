@@ -41,7 +41,7 @@ export default function Input({
 
       <div className="relative">
         {leftIcon && (
-          <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-ink-400">
+          <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-ink-600">
             {leftIcon}
           </span>
         )}
@@ -61,7 +61,7 @@ export default function Input({
         />
 
         {rightIcon && (
-          <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-ink-400">
+          <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-ink-600">
             {rightIcon}
           </span>
         )}
@@ -70,7 +70,7 @@ export default function Input({
       {(error || hint) && (
         <p
           id={messageId}
-          className={`mt-1.5 text-xs ${error ? "text-vermilion-700" : "text-ink-500"}`}
+          className={`mt-1.5 text-[13px] ${error ? "text-vermilion-700" : "text-ink-600"}`}
         >
           {error || hint}
         </p>

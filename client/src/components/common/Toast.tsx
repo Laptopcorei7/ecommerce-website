@@ -37,7 +37,7 @@ export default function ToastContainer() {
             <div className="flex flex-1 items-start gap-3 px-4 py-3">
               <div className="flex-1">
                 <p className="meta-strong">{label}</p>
-                <p className="mt-1 text-[13px] leading-snug text-ink-700">
+                <p className="mt-1 text-[15px] leading-snug text-ink-700">
                   {toast.message}
                 </p>
               </div>
@@ -46,7 +46,7 @@ export default function ToastContainer() {
                 type="button"
                 onClick={() => removeToast(toast.id)}
                 aria-label="Dismiss"
-                className="-mr-1 -mt-1 grid h-7 w-7 shrink-0 place-items-center text-ink-400 transition-colors hover:text-ink-950"
+                className="-mr-1 -mt-1 grid h-7 w-7 shrink-0 place-items-center text-ink-600 transition-colors hover:text-ink-950"
               >
                 <svg
                   className="h-3.5 w-3.5"

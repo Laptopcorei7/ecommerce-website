@@ -176,7 +176,7 @@ export default function ProductDetail() {
       <div className="shell py-32 text-center">
         <p className="meta">404</p>
         <h1 className="display mt-4 text-ink-950">We don't stock that</h1>
-        <p className="mx-auto mt-4 max-w-sm text-[15px] text-ink-600">
+        <p className="mx-auto mt-4 max-w-sm text-[16px] text-ink-600">
           The item may have been discontinued, or the link may be wrong.
         </p>
         <Link to="/" className="btn-primary mt-8">
@@ -196,7 +196,7 @@ export default function ProductDetail() {
       {/* ── Breadcrumb ────────────────────────────────────────────────────── */}
       <nav
         aria-label="Breadcrumb"
-        className="shell flex items-center gap-2 border-b border-ink-950/12 py-4 font-mono text-meta uppercase text-ink-500"
+        className="shell flex items-center gap-2 border-b border-ink-950/12 py-4 font-mono text-meta uppercase text-ink-600"
       >
         <Link to="/" className="transition-colors hover:text-ink-950">
           Index
@@ -226,7 +226,7 @@ export default function ProductDetail() {
               />
             ) : (
               <div className="grid h-full place-items-center bg-paper-300">
-                <span className="meta text-ink-400">No image</span>
+                <span className="meta text-ink-600">No image</span>
               </div>
             )}
           </div>
@@ -272,7 +272,7 @@ export default function ProductDetail() {
                   <StarRating rating={product.averageRating} size="sm" />
                   <a
                     href="#reviews"
-                    className="font-mono text-meta text-ink-500 underline-offset-4 hover:text-ink-950 hover:underline"
+                    className="font-mono text-meta text-ink-600 underline-offset-4 hover:text-ink-950 hover:underline"
                   >
                     {product.averageRating.toFixed(1)} ·{" "}
                     {pluralize(reviewCount || product.totalReviews, "review")}
@@ -281,7 +281,7 @@ export default function ProductDetail() {
               )}
             </div>
 
-            <p className="mt-7 max-w-prose text-[15px] leading-relaxed text-ink-700">
+            <p className="mt-7 max-w-prose text-[16px] leading-relaxed text-ink-700">
               {product.description}
             </p>
 
@@ -311,7 +311,7 @@ export default function ProductDetail() {
                   <Button disabled fullWidth size="lg">
                     Sold out
                   </Button>
-                  <p className="mt-3 text-[13px] text-ink-500">
+                  <p className="mt-3 text-[15px] text-ink-600">
                     Save it and we'll show it in your list when it returns.
                   </p>
                 </div>
@@ -323,13 +323,13 @@ export default function ProductDetail() {
                       onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                       disabled={quantity <= 1}
                       aria-label="Decrease quantity"
-                      className="h-full w-11 text-ink-700 transition-colors hover:bg-ink-950/5 disabled:text-ink-300"
+                      className="h-full w-11 text-ink-700 transition-colors hover:bg-ink-950/5 disabled:text-ink-400"
                     >
                       −
                     </button>
                     <span
                       aria-live="polite"
-                      className="w-10 text-center font-mono text-sm tabular text-ink-950"
+                      className="w-10 text-center font-mono text-[15px] tabular text-ink-950"
                     >
                       {quantity}
                     </span>
@@ -340,7 +340,7 @@ export default function ProductDetail() {
                       }
                       disabled={quantity >= product.stock}
                       aria-label="Increase quantity"
-                      className="h-full w-11 text-ink-700 transition-colors hover:bg-ink-950/5 disabled:text-ink-300"
+                      className="h-full w-11 text-ink-700 transition-colors hover:bg-ink-950/5 disabled:text-ink-400"
                     >
                       +
                     </button>
@@ -370,7 +370,7 @@ export default function ProductDetail() {
             </div>
 
             {/* Standing terms — the same three facts as the home page */}
-            <dl className="mt-8 grid grid-cols-1 gap-3 border-t border-ink-950/12 pt-6 text-[13px]">
+            <dl className="mt-8 grid grid-cols-1 gap-3 border-t border-ink-950/12 pt-6 text-[15px]">
               {[
                 [
                   "Shipping",
@@ -380,7 +380,7 @@ export default function ProductDetail() {
                 ["Repairs", "Spares kept for everything we sell."],
               ].map(([term, detail]) => (
                 <div key={term} className="flex gap-4">
-                  <dt className="w-20 shrink-0 font-mono text-meta uppercase text-ink-400">
+                  <dt className="w-20 shrink-0 font-mono text-meta uppercase text-ink-600">
                     {term}
                   </dt>
                   <dd className="text-ink-600">{detail}</dd>
@@ -407,7 +407,7 @@ export default function ProductDetail() {
             {reviewCount > 0 && (
               <div className="mt-4 flex items-center gap-3">
                 <StarRating rating={product.averageRating} size="md" />
-                <span className="font-mono text-meta uppercase text-ink-500">
+                <span className="font-mono text-meta uppercase text-ink-600">
                   {pluralize(reviewCount, "review")}
                 </span>
               </div>
@@ -471,7 +471,7 @@ export default function ProductDetail() {
                 </Button>
               </form>
             ) : (
-              <p className="mt-8 border-t border-ink-950/12 pt-6 text-[13px] text-ink-600">
+              <p className="mt-8 border-t border-ink-950/12 pt-6 text-[15px] text-ink-600">
                 <Link to="/login" className="link font-medium">
                   Sign in
                 </Link>{" "}
@@ -483,7 +483,7 @@ export default function ProductDetail() {
           {/* Review list */}
           <div className="lg:col-span-7 lg:col-start-6">
             {reviews.length === 0 ? (
-              <p className="border border-ink-950/12 px-6 py-16 text-center text-[14px] text-ink-500">
+              <p className="border border-ink-950/12 px-6 py-16 text-center text-[15px] text-ink-600">
                 Nobody has reviewed this yet.
               </p>
             ) : (
@@ -492,19 +492,19 @@ export default function ProductDetail() {
                   <li key={review.id} className="py-6">
                     <div className="flex flex-wrap items-baseline justify-between gap-3">
                       <StarRating rating={review.rating} size="sm" />
-                      <span className="font-mono text-meta-xs uppercase text-ink-400">
+                      <span className="font-mono text-meta-xs uppercase text-ink-600">
                         {formatRelative(review.createdAt)}
                       </span>
                     </div>
 
-                    <p className="mt-3 text-[15px] font-medium tracking-tight text-ink-950">
+                    <p className="mt-3 text-[16px] font-medium tracking-tight text-ink-950">
                       {review.title}
                     </p>
-                    <p className="mt-2 max-w-prose text-[14px] leading-relaxed text-ink-700">
+                    <p className="mt-2 max-w-prose text-[15px] leading-relaxed text-ink-700">
                       {review.comment}
                     </p>
 
-                    <p className="mt-3 flex items-center gap-2 font-mono text-meta-xs uppercase text-ink-500">
+                    <p className="mt-3 flex items-center gap-2 font-mono text-meta-xs uppercase text-ink-600">
                       {review.user?.name ?? "Anonymous"}
                       {review.isVerifiedPurchase && (
                         <span className="text-ink-700">· Verified</span>

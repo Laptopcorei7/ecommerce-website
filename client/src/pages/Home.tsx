@@ -161,7 +161,7 @@ export default function Home() {
                 chosen slowly.
               </h1>
 
-              <p className="mt-6 max-w-prose text-[15px] leading-relaxed text-ink-700">
+              <p className="mt-6 max-w-prose text-[16px] leading-relaxed text-ink-700">
                 We stock forty-three objects. Each one replaced something we had
                 been using for years, and only after it turned out to be better.
                 No sub-brands, no seasonal churn, no seventeen versions of a
@@ -197,21 +197,21 @@ export default function Home() {
               title: "Shipped in two days",
               copy: "From our own shelves, not a dropship warehouse. Tracked, and packed in paper.",
               span: "md:col-span-5",
-              size: "text-[17px]",
+              size: "text-[18px]",
             },
             {
               n: "02",
               title: "Thirty days to change your mind",
               copy: "Unused, in the box it arrived in. We pay the return.",
               span: "md:col-span-4",
-              size: "text-[15px]",
+              size: "text-[16px]",
             },
             {
               n: "03",
               title: "Repaired before replaced",
               copy: "We keep spares for everything we sell.",
               span: "md:col-span-3",
-              size: "text-[14px]",
+              size: "text-[15px]",
             },
           ].map(({ n, title, copy, span, size }) => (
             <div
@@ -228,7 +228,7 @@ export default function Home() {
                   {title}
                 </span>
               </dt>
-              <dd className="mt-2 pl-8 text-[13px] leading-relaxed text-ink-600">
+              <dd className="mt-2 pl-8 text-[15px] leading-relaxed text-ink-600">
                 {copy}
               </dd>
             </div>
@@ -276,10 +276,10 @@ export default function Home() {
                   </div>
                   <div className="p-4">
                     <p className="meta">{product.category}</p>
-                    <p className="mt-2 text-[14px] font-medium leading-snug tracking-tight text-ink-950 line-clamp-2">
+                    <p className="mt-2 text-[15px] font-medium leading-snug tracking-tight text-ink-950 line-clamp-2">
                       {product.name}
                     </p>
-                    <p className="mt-2 font-mono text-[13px] tabular text-ink-700">
+                    <p className="mt-2 font-mono text-[15px] tabular text-ink-700">
                       {formatPrice(product.price)}
                     </p>
                   </div>
@@ -313,7 +313,7 @@ export default function Home() {
               <h3 className="display-sm mt-2 text-2xl text-ink-950">
                 {collection.title}
               </h3>
-              <p className="mt-3 max-w-prose text-[14px] leading-relaxed text-ink-600">
+              <p className="mt-3 max-w-prose text-[15px] leading-relaxed text-ink-600">
                 {collection.copy}
               </p>
               <span className="mt-4 inline-block font-mono text-meta uppercase text-ink-950 underline-offset-4 group-hover:underline">
@@ -337,7 +337,7 @@ export default function Home() {
                 : activeCategory}
             </h2>
           </div>
-          <p className="shrink-0 font-mono text-meta uppercase tabular text-ink-500">
+          <p className="shrink-0 font-mono text-meta uppercase tabular text-ink-600">
             {isLoading ? "—" : pluralize(totalItems, "item")}
           </p>
         </div>
@@ -361,7 +361,7 @@ export default function Home() {
                   className={`relative shrink-0 py-1 font-mono text-meta uppercase transition-colors ${
                     isActive
                       ? "text-ink-950"
-                      : "text-ink-500 hover:text-ink-950"
+                      : "text-ink-600 hover:text-ink-950"
                   }`}
                 >
                   {category}
@@ -394,7 +394,7 @@ export default function Home() {
                 value={searchDraft}
                 onChange={(e) => setSearchDraft(e.target.value)}
                 placeholder="Search"
-                className="h-9 flex-1 border-0 border-b border-ink-950/20 bg-transparent px-0 font-mono text-meta uppercase text-ink-950 placeholder:text-ink-400 focus:border-ink-950 focus:outline-none focus:ring-0"
+                className="h-9 flex-1 border-0 border-b border-ink-950/20 bg-transparent px-0 font-mono text-meta uppercase text-ink-950 placeholder:text-ink-600 focus:border-ink-950 focus:outline-none focus:ring-0"
               />
               {activeSearch && (
                 <button
@@ -403,7 +403,7 @@ export default function Home() {
                     setSearchDraft("");
                     updateParams({ q: undefined });
                   }}
-                  className="font-mono text-meta uppercase text-ink-400 hover:text-vermilion-600"
+                  className="font-mono text-meta uppercase text-ink-600 hover:text-vermilion-600"
                 >
                   Clear
                 </button>
@@ -413,7 +413,7 @@ export default function Home() {
             <div className="flex items-center gap-3">
               <label
                 htmlFor="index-sort"
-                className="font-mono text-meta uppercase text-ink-400"
+                className="font-mono text-meta uppercase text-ink-600"
               >
                 Sort
               </label>
@@ -449,7 +449,7 @@ export default function Home() {
               <h3 className="display-sm mt-4 text-2xl text-ink-950">
                 Nothing matches that
               </h3>
-              <p className="mx-auto mt-3 max-w-sm text-[14px] leading-relaxed text-ink-600">
+              <p className="mx-auto mt-3 max-w-sm text-[15px] leading-relaxed text-ink-600">
                 We only stock forty-three things, so the index runs out quickly.
                 Try a broader category.
               </p>
