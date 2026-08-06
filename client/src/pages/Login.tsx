@@ -13,7 +13,7 @@ export default function Login() {
   const location = useLocation();
 
   // Set by ProductCard and ProductDetail when a guest tries to save or add to
-  // bag — sign in should return them to what they were looking at.
+  // bag, so sign in should return them to what they were looking at.
   const returnTo = (location.state as { from?: string } | null)?.from ?? "/";
 
   const [email, setEmail] = useState("");

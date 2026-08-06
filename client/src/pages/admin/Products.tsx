@@ -71,7 +71,7 @@ export default function AdminProducts() {
     async (q?: string) => {
       setIsLoading(true);
       try {
-        // getAll, not list — `productsApi.list` never existed, so this page threw
+        // getAll, not list. `productsApi.list` never existed, so this page threw
         // on mount before it rendered anything.
         const res = await productsApi.getAll({
           search: q || undefined,
@@ -334,7 +334,7 @@ export default function AdminProducts() {
                     <td className="py-3 pr-6 font-mono text-[15px] tabular text-ink-600">
                       {product.averageRating > 0
                         ? `${product.averageRating.toFixed(1)} · ${product.totalReviews}`
-                        : "—"}
+                        : "–"}
                     </td>
                     <td className="py-3">
                       <div className="flex items-center gap-4">

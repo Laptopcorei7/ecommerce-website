@@ -14,7 +14,7 @@
  * idempotent: running it twice updates the existing account rather than
  * failing on the unique email index.
  *
- * `employeeId` matters — /admin/login requires it alongside the email and
+ * `employeeId` matters, because /admin/login requires it alongside the email and
  * password, so an admin created without one can never sign in to the
  * administration area.
  */
@@ -32,7 +32,7 @@ const EMPLOYEE_ID = process.env.ADMIN_EMPLOYEE_ID || "SUN-0001";
 
 async function createAdmin() {
   if (!process.env.MONGO_URI) {
-    throw new Error("MONGO_URI is not set — check server/.env");
+    throw new Error("MONGO_URI is not set. Check server/.env");
   }
 
   await mongoose.connect(process.env.MONGO_URI);

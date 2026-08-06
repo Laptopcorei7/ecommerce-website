@@ -31,7 +31,7 @@ app.use(helmet());
 app.use(cookieParser());
 app.use(express.json({ limit: "100kb" }));
 
-// Liveness probe. Deliberately does not touch the database — it answers
+// Liveness probe. Deliberately does not touch the database, because it answers
 // "is the process up", which is a different question from "is Mongo up".
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok", uptime: process.uptime() });

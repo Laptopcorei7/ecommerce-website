@@ -15,7 +15,7 @@ const { requireAdmin } = require("../../middleware/admin.middleware");
 const adminDashboardRouter = express.Router();
 
 // Scoped to /admin. Mounted path-less, these ran against every request that
-// reached this router — so an unknown URL was answered with 401/403 instead of
+// reached this router, so an unknown URL was answered with 401/403 instead of
 // a 404, and the terminal handler was never reached.
 adminDashboardRouter.use("/admin", requireAuth, requireAdmin);
 

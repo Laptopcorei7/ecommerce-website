@@ -127,7 +127,7 @@ export const authApi = {
   login: (data: { email: string; password: string }) =>
     api.post<{ user: User; message: string }>("/login", data),
 
-  // Separate admin login — requires employeeId in addition to email + password
+  // Separate admin login. Requires employeeId in addition to email + password
   adminLogin: (data: { employeeId: string; email: string; password: string }) =>
     api.post<{ user: User; message: string }>("/admin/login", data),
 

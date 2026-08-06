@@ -28,7 +28,7 @@ export default function ProtectedRoute({
       return <Navigate to="/" replace />;
     }
     if (!isAdminSession) {
-      // Valid admin user but no tab-scoped admin session — send to admin login
+      // Valid admin user but no tab-scoped admin session, so send to admin login
       return <Navigate to="/admin/login" state={{ from: location }} replace />;
     }
   }

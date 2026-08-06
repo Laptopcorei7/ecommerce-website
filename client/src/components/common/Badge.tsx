@@ -6,12 +6,12 @@ import type { OrderStatus } from "@/types";
  * without introducing five new background tones to the palette.
  */
 /**
- * The dot darkens as the order advances — clay while it is waiting on us,
+ * The dot darkens as the order advances: clay while it is waiting on us,
  * vermilion while it is being worked, then ink through dispatch to delivered.
  * Cancelled fades out instead of progressing.
  *
  * Expressing five states as one darkening ramp keeps the palette closed. The
- * alternative — a green for "delivered", a blue for "shipped" — is how a
+ * alternative, a green for "delivered" and a blue for "shipped", is how a
  * declared four-colour system quietly becomes seven.
  */
 const statusConfig: Record<OrderStatus, { label: string; dot: string }> = {

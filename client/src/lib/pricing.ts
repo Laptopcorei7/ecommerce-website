@@ -3,7 +3,7 @@
  *
  * The storefront needs these to show a running total without a round trip per
  * keystroke, but the server's copy is the one that is actually charged. Change
- * one and you must change the other — a mismatch means the customer is quoted
+ * one and you must change the other, because a mismatch means the customer is quoted
  * a total they aren't billed.
  */
 

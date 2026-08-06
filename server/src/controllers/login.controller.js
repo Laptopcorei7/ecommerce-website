@@ -30,8 +30,8 @@ try {
 let savePending = false;
 let saveInFlight = null;
 
-// Unlike the load above, this runs on the request path — every login, logout
-// and password change calls it — so it must not stall the event loop.
+// Unlike the load above, this runs on the request path. Every login, logout
+// and password change calls it, so it must not stall the event loop.
 //
 // Callers do not await it. Overlapping calls collapse into a single trailing
 // write of the latest state, and the write goes to a temp file that is renamed

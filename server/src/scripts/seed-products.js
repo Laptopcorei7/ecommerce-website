@@ -58,7 +58,7 @@ function pickDistinct(arr, count) {
 // Images
 //
 // Three aspect ratios of the same photograph give the product gallery genuinely
-// different framings — a tall crop, a square and a wide one — without needing
+// different framings (a tall crop, a square and a wide one) without needing
 // three separate shoots.
 // ─────────────────────────────────────────────────────────────────────────────
 const ASPECTS = ["4:5", "1:1", "3:2"];
@@ -80,11 +80,11 @@ async function verifyImages() {
           const type = res.headers.get("content-type") || "";
           if (!res.ok || !type.startsWith("image/")) {
             failures.push(
-              `${p.name} — HTTP ${res.status} (${type || "no type"})`,
+              `${p.name}: HTTP ${res.status} (${type || "no type"})`,
             );
           }
         } catch (err) {
-          failures.push(`${p.name} — ${err.message}`);
+          failures.push(`${p.name}: ${err.message}`);
         }
       }),
     );
@@ -95,9 +95,7 @@ async function verifyImages() {
   if (failures.length) {
     console.error(`\n${failures.length} image(s) failed:`);
     for (const f of failures) console.error(`  ${f}`);
-    throw new Error(
-      "Image verification failed — fix catalog.js before seeding",
-    );
+    throw new Error("Image verification failed. Fix catalog.js before seeding");
   }
   console.log("All product images resolved.\n");
 }
@@ -106,7 +104,7 @@ async function verifyImages() {
 // Reviews
 //
 // Ratings are drawn to land near the catalogue's target without ever being
-// exactly it — a product where every reviewer agrees to one decimal place looks
+// exactly it, because a product where every reviewer agrees to one decimal place looks
 // fabricated.
 // ─────────────────────────────────────────────────────────────────────────────
 function ratingsFor(target, count) {
@@ -142,8 +140,8 @@ function reviewCountFor(product) {
 /**
  * Rank products by how recently they were "added", rotating through the
  * categories so the arrivals rail shows a mug beside a book beside a boot.
- * Returns an array where `result[i]` is the recency rank of `products[i]` —
- * 0 is newest.
+ * Returns an array where `result[i]` is the recency rank of `products[i]`.
+ * Rank 0 is newest.
  */
 function recencyOrder(products) {
   const byCategory = new Map();
@@ -229,7 +227,7 @@ async function seedCustomers() {
 
 async function seed() {
   if (!process.env.MONGO_URI) {
-    throw new Error("MONGO_URI is not set — check server/.env");
+    throw new Error("MONGO_URI is not set. Check server/.env");
   }
 
   if (VERIFY) await verifyImages();
@@ -240,8 +238,8 @@ async function seed() {
   const admin = await Register.findOne({ role: "admin" });
   if (!admin) {
     throw new Error(
-      "No admin user found. Run `node src/scripts/create-admin.js` first — " +
-        "products require a createdBy reference.",
+      "No admin user found. Run `node src/scripts/create-admin.js` first. " +
+        "Products require a createdBy reference.",
     );
   }
   console.log(`Admin: ${admin.email}`);

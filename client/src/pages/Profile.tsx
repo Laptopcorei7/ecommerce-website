@@ -156,7 +156,7 @@ export default function Profile() {
                   label="Email"
                   value={user?.email ?? ""}
                   disabled
-                  hint="Email changes aren't available in this build — there's no mail transport wired up to verify a new address."
+                  hint="Email changes aren't available in this build, because there's no mail transport wired up to verify a new address."
                 />
               </div>
 
