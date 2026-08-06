@@ -185,32 +185,46 @@ export default function Home() {
       </section>
 
       {/* ── Standing statements ────────────────────────────────────────────
-          Three facts, numbered, on a rule. Replaces the icon-and-blurb row. */}
+          Three facts on a rule. Deliberately unequal: a 5/4/3 split with the
+          type stepping down, so it reads as a masthead rather than the
+          three-equal-columns feature row every storefront has. Shipping is
+          the thing people actually want to know, so it gets the width. */}
       <section className="border-b border-ink-950/12">
-        <dl className="shell grid grid-cols-1 divide-y divide-ink-950/12 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+        <dl className="shell grid grid-cols-1 divide-y divide-ink-950/12 md:grid-cols-12 md:divide-x md:divide-y-0">
           {[
-            [
-              "01",
-              "Shipped in two days",
-              "From our own shelves, not a dropship warehouse.",
-            ],
-            [
-              "02",
-              "Thirty days to change your mind",
-              "Unused, in the box it arrived in. We pay the return.",
-            ],
-            [
-              "03",
-              "Repaired before replaced",
-              "We keep spares for everything we sell.",
-            ],
-          ].map(([n, title, copy]) => (
-            <div key={n} className="py-8 sm:px-8 sm:first:pl-0 sm:last:pr-0">
+            {
+              n: "01",
+              title: "Shipped in two days",
+              copy: "From our own shelves, not a dropship warehouse. Tracked, and packed in paper.",
+              span: "md:col-span-5",
+              size: "text-[17px]",
+            },
+            {
+              n: "02",
+              title: "Thirty days to change your mind",
+              copy: "Unused, in the box it arrived in. We pay the return.",
+              span: "md:col-span-4",
+              size: "text-[15px]",
+            },
+            {
+              n: "03",
+              title: "Repaired before replaced",
+              copy: "We keep spares for everything we sell.",
+              span: "md:col-span-3",
+              size: "text-[14px]",
+            },
+          ].map(({ n, title, copy, span, size }) => (
+            <div
+              key={n}
+              className={`${span} py-8 md:px-8 md:first:pl-0 md:last:pr-0`}
+            >
               <dt className="flex items-baseline gap-3">
                 <span className="font-mono text-meta-xs text-vermilion-600">
                   {n}
                 </span>
-                <span className="text-[15px] font-medium tracking-tight text-ink-950">
+                <span
+                  className={`${size} font-medium tracking-tight text-ink-950`}
+                >
                   {title}
                 </span>
               </dt>

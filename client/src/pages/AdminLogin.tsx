@@ -41,6 +41,7 @@ export default function AdminLogin() {
       title="Staff sign in"
       intro="Administration requires an employee ID in addition to the usual credentials, and the elevated session lasts only as long as this tab."
       photo="table"
+      caption="The back of the shop."
       footer={
         <>
           Not staff?{" "}

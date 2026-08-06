@@ -22,7 +22,7 @@ const STRENGTH = [
   { label: "Weak", tone: "bg-vermilion-600" },
   { label: "Fair", tone: "bg-clay-dark" },
   { label: "Good", tone: "bg-ink-700" },
-  { label: "Strong", tone: "bg-emerald-700" },
+  { label: "Strong", tone: "bg-ink-950" },
 ];
 
 function PasswordStrength({ password }: { password: string }) {
@@ -98,6 +98,7 @@ export default function Register() {
       title="Create an account"
       intro="It takes a moment, and it's the only way to keep a bag between visits."
       photo="layering"
+      caption="Start with one good thing."
       footer={
         <>
           Already have one?{" "}

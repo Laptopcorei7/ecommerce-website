@@ -63,7 +63,7 @@ export default function Cart() {
                   more for complimentary shipping
                 </>
               ) : (
-                <span className="text-emerald-800">
+                <span className="font-medium text-ink-950">
                   Shipping is on us — you're over{" "}
                   {formatPrice(FREE_SHIPPING_THRESHOLD)}.
                 </span>
@@ -189,7 +189,7 @@ export default function Cart() {
                 <dt className="text-ink-600">Shipping</dt>
                 <dd
                   className={`font-mono tabular ${
-                    totals.shipping === 0 ? "text-emerald-800" : "text-ink-950"
+                    totals.shipping === 0 ? "text-ink-950" : "text-ink-700"
                   }`}
                 >
                   {totals.shipping === 0

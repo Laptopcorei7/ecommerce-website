@@ -7,6 +7,12 @@ interface AuthShellProps {
   intro: string;
   /** Which editorial photograph fills the left panel. */
   photo?: keyof typeof EDITORIAL;
+  /**
+   * The line set over the photograph. Each page passes its own — the home
+   * page's "Fewer things, chosen slowly." was previously repeated on all
+   * three, which turned the best line in the build into wallpaper.
+   */
+  caption: string;
   children: React.ReactNode;
   footer: React.ReactNode;
 }
@@ -21,6 +27,7 @@ export default function AuthShell({
   title,
   intro,
   photo = "workshop",
+  caption,
   children,
   footer,
 }: AuthShellProps) {
@@ -35,14 +42,12 @@ export default function AuthShell({
           <img src={editorialUrl(EDITORIAL[photo], 1400)} alt="" />
           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink-950/70 to-transparent p-10">
             <p
-              className="font-serif text-3xl font-semibold leading-tight text-paper-50"
+              className="max-w-sm font-serif text-3xl font-semibold leading-tight text-paper-50"
               style={{
                 fontVariationSettings: '"opsz" 48, "SOFT" 24, "WONK" 1',
               }}
             >
-              Fewer things,
-              <br />
-              chosen slowly.
+              {caption}
             </p>
           </div>
         </div>

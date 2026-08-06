@@ -6,10 +6,10 @@ import { useToast } from "@/contexts/ToastContext";
  * colour rather than four pastel backgrounds.
  */
 const config = {
-  success: { label: "Done", accent: "bg-emerald-700" },
+  success: { label: "Done", accent: "bg-ink-950" },
   error: { label: "Error", accent: "bg-vermilion-600" },
   warning: { label: "Notice", accent: "bg-clay-dark" },
-  info: { label: "Info", accent: "bg-ink-700" },
+  info: { label: "Info", accent: "bg-ink-400" },
 } as const;
 
 export default function ToastContainer() {

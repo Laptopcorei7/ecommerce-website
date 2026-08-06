@@ -262,7 +262,7 @@ export default function Checkout() {
                 <dt className="text-ink-600">Shipping</dt>
                 <dd
                   className={`font-mono tabular ${
-                    totals.shipping === 0 ? "text-emerald-800" : "text-ink-950"
+                    totals.shipping === 0 ? "text-ink-950" : "text-ink-700"
                   }`}
                 >
                   {totals.shipping === 0

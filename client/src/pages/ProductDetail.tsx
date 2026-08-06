@@ -294,7 +294,7 @@ export default function ProductDetail() {
                     ? "bg-ink-300"
                     : low
                       ? "bg-vermilion-600"
-                      : "bg-emerald-700"
+                      : "bg-ink-950"
                 }`}
               />
               {soldOut
@@ -365,7 +365,7 @@ export default function ProductDetail() {
                 aria-pressed={wishlisted}
                 className="mt-4 font-mono text-meta uppercase text-ink-600 underline-offset-4 transition-colors hover:text-vermilion-600 hover:underline"
               >
-                {wishlisted ? "✓ Saved" : "Save for later"}
+                {wishlisted ? "Saved" : "Save for later"}
               </button>
             </div>
 
@@ -507,7 +507,7 @@ export default function ProductDetail() {
                     <p className="mt-3 flex items-center gap-2 font-mono text-meta-xs uppercase text-ink-500">
                       {review.user?.name ?? "Anonymous"}
                       {review.isVerifiedPurchase && (
-                        <span className="text-emerald-700">· Verified</span>
+                        <span className="text-ink-700">· Verified</span>
                       )}
                     </p>
                   </li>
